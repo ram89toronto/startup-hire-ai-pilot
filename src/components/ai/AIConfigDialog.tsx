@@ -134,7 +134,7 @@ export const AIConfigDialog = ({ open, onOpenChange }: AIConfigDialogProps) => {
                 <CardTitle className="flex items-center gap-2">
                   <Shield className="h-5 w-5 text-green-600" />
                   Security & Privacy
-                </Car dTitle>
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
