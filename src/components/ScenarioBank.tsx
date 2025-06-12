@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Zap, TrendingUp, DollarSign, Users, Code, BarChart3, Shield, RefreshCw, Sparkles } from "lucide-react";
+import { Zap, TrendingUp, DollarSign, Users, Code, BarChart3, Shield, RefreshCw, Sparkles, Copy } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -82,6 +82,7 @@ export const ScenarioBank = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedScenarios, setGeneratedScenarios] = useState<any[]>([]);
+  const [generatingScenarioId, setGeneratingScenarioId] = useState<string | null>(null);
 
   const generateRandomScenario = async (category?: string) => {
     setIsGenerating(true);
@@ -136,6 +137,29 @@ export const ScenarioBank = () => {
     }, 2000);
   };
 
+  const generateBasedOnExample = async (baseScenario: any, index: number) => {
+    const scenarioId = `example-${index}`;
+    setGeneratingScenarioId(scenarioId);
+    
+    // Simulate AI generation based on example
+    setTimeout(() => {
+      const newScenario = {
+        title: `${baseScenario.title} - Variant`,
+        icon: baseScenario.icon,
+        category: baseScenario.category,
+        description: `A variation of the ${baseScenario.title.toLowerCase()} scenario. ${baseScenario.description} This version adds new complexity and challenges for deeper evaluation.`,
+        tests: baseScenario.tests,
+        lookFor: `${baseScenario.lookFor} Look for additional creative problem-solving approaches and deeper strategic thinking.`,
+        isGenerated: true,
+        baseScenario: baseScenario.title
+      };
+      
+      setGeneratedScenarios(prev => [newScenario, ...prev]);
+      setGeneratingScenarioId(null);
+      toast.success(`New scenario generated based on "${baseScenario.title}"!`);
+    }, 2000);
+  };
+
   const allScenarios = [...generatedScenarios, ...scenarios];
 
   return (
@@ -148,75 +172,79 @@ export const ScenarioBank = () => {
         </p>
       </div>
 
-      {/* Scenario Generation Controls */}
-      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200">
+      {/* Custom Scenario Generation - Moved to Top */}
+      <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-blue-600" />
-            Generate New Scenarios
+            <Sparkles className="h-5 w-5 text-purple-600" />
+            Create Custom Scenario
           </CardTitle>
           <CardDescription>
-            Create custom scenarios or generate random ones by category
+            Generate a completely custom scenario based on your specific needs
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-4">
-            {/* Custom Title Generation */}
-            <div className="space-y-3">
-              <h4 className="font-medium text-slate-700">Custom Scenario</h4>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Enter scenario title..."
-                  value={customTitle}
-                  onChange={(e) => setCustomTitle(e.target.value)}
-                  className="flex-1"
-                />
-                <Button 
-                  onClick={generateCustomScenario}
-                  disabled={isGenerating}
-                  className="shrink-0"
-                >
-                  {isGenerating ? (
-                    <RefreshCw className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Sparkles className="h-4 w-4" />
-                  )}
-                  Generate
-                </Button>
-              </div>
-            </div>
+        <CardContent>
+          <div className="flex gap-2">
+            <Input
+              placeholder="Enter your custom scenario title..."
+              value={customTitle}
+              onChange={(e) => setCustomTitle(e.target.value)}
+              className="flex-1"
+            />
+            <Button 
+              onClick={generateCustomScenario}
+              disabled={isGenerating}
+              className="shrink-0 bg-purple-600 hover:bg-purple-700"
+            >
+              {isGenerating ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="h-4 w-4" />
+              )}
+              Generate Custom
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
-            {/* Random by Category */}
-            <div className="space-y-3">
-              <h4 className="font-medium text-slate-700">Random by Category</h4>
-              <div className="flex gap-2">
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="flex-1">
-                    <SelectValue placeholder="Select category (optional)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button 
-                  onClick={() => generateRandomScenario(selectedCategory)}
-                  disabled={isGenerating}
-                  variant="outline"
-                  className="shrink-0"
-                >
-                  {isGenerating ? (
-                    <RefreshCw className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <RefreshCw className="h-4 w-4" />
-                  )}
-                  Random
-                </Button>
-              </div>
-            </div>
+      {/* Random Generation Controls */}
+      <Card className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <RefreshCw className="h-5 w-5 text-blue-600" />
+            Generate Random Scenario
+          </CardTitle>
+          <CardDescription>
+            Create random scenarios by category or completely random
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-2">
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="flex-1">
+                <SelectValue placeholder="Select category (optional)" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button 
+              onClick={() => generateRandomScenario(selectedCategory)}
+              disabled={isGenerating}
+              variant="outline"
+              className="shrink-0"
+            >
+              {isGenerating ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
+              Generate Random
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -243,15 +271,38 @@ export const ScenarioBank = () => {
                           AI Generated
                         </Badge>
                       )}
+                      {scenario.baseScenario && (
+                        <Badge variant="outline" className="bg-green-100 text-green-800">
+                          Based on: {scenario.baseScenario}
+                        </Badge>
+                      )}
                     </CardTitle>
                     <CardDescription className="mt-1">
                       Tests: <strong>{scenario.tests}</strong>
                     </CardDescription>
                   </div>
                 </div>
-                <Badge className={categoryColors[scenario.category as keyof typeof categoryColors]}>
-                  {scenario.category}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge className={categoryColors[scenario.category as keyof typeof categoryColors]}>
+                    {scenario.category}
+                  </Badge>
+                  {!scenario.isGenerated && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => generateBasedOnExample(scenario, index)}
+                      disabled={generatingScenarioId === `example-${index}`}
+                      className="shrink-0"
+                    >
+                      {generatingScenarioId === `example-${index}` ? (
+                        <RefreshCw className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <Copy className="h-3 w-3" />
+                      )}
+                      Generate Similar
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
