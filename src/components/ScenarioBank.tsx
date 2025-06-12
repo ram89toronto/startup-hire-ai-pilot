@@ -1,7 +1,12 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Zap, TrendingUp, DollarSign, Users, Code, BarChart3, Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Zap, TrendingUp, DollarSign, Users, Code, BarChart3, Shield, RefreshCw, Sparkles } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 const scenarios = [
   {
@@ -70,7 +75,69 @@ const categoryColors = {
   "Values": "bg-red-100 text-red-800"
 };
 
+const categories = ["Adaptability", "Technical", "Leadership", "Strategy", "Values"];
+
 export const ScenarioBank = () => {
+  const [customTitle, setCustomTitle] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedScenarios, setGeneratedScenarios] = useState<any[]>([]);
+
+  const generateRandomScenario = async (category?: string) => {
+    setIsGenerating(true);
+    
+    // Simulate AI generation (replace with actual AI integration)
+    setTimeout(() => {
+      const randomCategories = category ? [category] : categories;
+      const randomCategory = randomCategories[Math.floor(Math.random() * randomCategories.length)];
+      
+      const newScenario = {
+        title: `Generated ${randomCategory} Challenge`,
+        icon: Code, // Default icon
+        category: randomCategory,
+        description: `This is a dynamically generated ${randomCategory.toLowerCase()} scenario for your interview process. The challenge tests critical skills in ${randomCategory.toLowerCase()} situations.`,
+        tests: `${randomCategory.toLowerCase()} skills and decision-making`,
+        lookFor: `Look for thoughtful analysis, practical solutions, and alignment with ${randomCategory.toLowerCase()} best practices.`,
+        isGenerated: true
+      };
+      
+      setGeneratedScenarios(prev => [newScenario, ...prev]);
+      setIsGenerating(false);
+      toast.success("New scenario generated successfully!");
+    }, 2000);
+  };
+
+  const generateCustomScenario = async () => {
+    if (!customTitle.trim()) {
+      toast.error("Please enter a scenario title");
+      return;
+    }
+    
+    setIsGenerating(true);
+    
+    // Simulate AI generation with custom title
+    setTimeout(() => {
+      const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+      
+      const newScenario = {
+        title: customTitle,
+        icon: Sparkles,
+        category: randomCategory,
+        description: `Custom scenario: ${customTitle}. This scenario tests the candidate's ability to handle unique challenges specific to your startup's needs.`,
+        tests: "creative problem-solving and adaptability",
+        lookFor: "Look for innovative thinking, practical approach, and alignment with your specific requirements.",
+        isGenerated: true
+      };
+      
+      setGeneratedScenarios(prev => [newScenario, ...prev]);
+      setCustomTitle("");
+      setIsGenerating(false);
+      toast.success("Custom scenario generated successfully!");
+    }, 2000);
+  };
+
+  const allScenarios = [...generatedScenarios, ...scenarios];
+
   return (
     <div className="space-y-8">
       <div className="text-center">
@@ -81,9 +148,87 @@ export const ScenarioBank = () => {
         </p>
       </div>
 
+      {/* Scenario Generation Controls */}
+      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-blue-600" />
+            Generate New Scenarios
+          </CardTitle>
+          <CardDescription>
+            Create custom scenarios or generate random ones by category
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* Custom Title Generation */}
+            <div className="space-y-3">
+              <h4 className="font-medium text-slate-700">Custom Scenario</h4>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Enter scenario title..."
+                  value={customTitle}
+                  onChange={(e) => setCustomTitle(e.target.value)}
+                  className="flex-1"
+                />
+                <Button 
+                  onClick={generateCustomScenario}
+                  disabled={isGenerating}
+                  className="shrink-0"
+                >
+                  {isGenerating ? (
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4" />
+                  )}
+                  Generate
+                </Button>
+              </div>
+            </div>
+
+            {/* Random by Category */}
+            <div className="space-y-3">
+              <h4 className="font-medium text-slate-700">Random by Category</h4>
+              <div className="flex gap-2">
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Select category (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button 
+                  onClick={() => generateRandomScenario(selectedCategory)}
+                  disabled={isGenerating}
+                  variant="outline"
+                  className="shrink-0"
+                >
+                  {isGenerating ? (
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4" />
+                  )}
+                  Random
+                </Button>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="grid gap-6">
-        {scenarios.map((scenario, index) => (
-          <Card key={index} className="hover:shadow-lg transition-all duration-300">
+        {allScenarios.map((scenario, index) => (
+          <Card 
+            key={index} 
+            className={`hover:shadow-lg transition-all duration-300 ${
+              scenario.isGenerated ? 'border-blue-200 bg-blue-50/30' : ''
+            }`}
+          >
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
@@ -91,7 +236,14 @@ export const ScenarioBank = () => {
                     <scenario.icon className="h-5 w-5 text-slate-600" />
                   </div>
                   <div>
-                    <CardTitle className="text-xl">{scenario.title}</CardTitle>
+                    <CardTitle className="text-xl flex items-center gap-2">
+                      {scenario.title}
+                      {scenario.isGenerated && (
+                        <Badge variant="outline" className="bg-blue-100 text-blue-800">
+                          AI Generated
+                        </Badge>
+                      )}
+                    </CardTitle>
                     <CardDescription className="mt-1">
                       Tests: <strong>{scenario.tests}</strong>
                     </CardDescription>
