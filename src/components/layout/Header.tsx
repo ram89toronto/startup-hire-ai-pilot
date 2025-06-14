@@ -18,7 +18,7 @@ export const Header = ({ isLoggedIn, setIsLoggedIn }: HeaderProps) => {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center gap-8">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
                 <Sparkles className="h-5 w-5 text-white" />
               </div>
               <span className="text-xl font-bold text-slate-800">Hiring Powerhouse</span>
@@ -26,15 +26,15 @@ export const Header = ({ isLoggedIn, setIsLoggedIn }: HeaderProps) => {
             
             {isLoggedIn && (
               <nav className="hidden lg:flex items-center gap-6">
-                <Button variant="ghost" className="flex items-center gap-2">
+                <Button variant="ghost" className="flex items-center gap-2 hover:text-blue-600">
                   <BarChart3 className="h-4 w-4" />
                   Dashboard
                 </Button>
-                <Button variant="ghost" className="flex items-center gap-2">
+                <Button variant="ghost" className="flex items-center gap-2 hover:text-blue-600">
                   <Sparkles className="h-4 w-4" />
                   Hiring Center
                 </Button>
-                <Button variant="ghost" className="flex items-center gap-2">
+                <Button variant="ghost" className="flex items-center gap-2 hover:text-blue-600">
                   <FileText className="h-4 w-4" />
                   Templates
                 </Button>
@@ -45,9 +45,9 @@ export const Header = ({ isLoggedIn, setIsLoggedIn }: HeaderProps) => {
           <div className="flex items-center gap-4">
             {!isLoggedIn && (
               <nav className="hidden md:flex items-center gap-6">
-                <Button variant="ghost">Features</Button>
-                <Button variant="ghost">How It Works</Button>
-                <Button variant="ghost">Pricing</Button>
+                <Button variant="ghost" className="hover:text-blue-600">Features</Button>
+                <Button variant="ghost" className="hover:text-blue-600">How It Works</Button>
+                <Button variant="ghost" className="hover:text-blue-600">Pricing</Button>
               </nav>
             )}
             
@@ -72,21 +72,21 @@ export const Header = ({ isLoggedIn, setIsLoggedIn }: HeaderProps) => {
           <div className="sm:hidden border-t bg-white py-4 space-y-2">
             {!isLoggedIn ? (
               <>
-                <Button variant="ghost" className="w-full justify-start">Features</Button>
-                <Button variant="ghost" className="w-full justify-start">How It Works</Button>
-                <Button variant="ghost" className="w-full justify-start">Pricing</Button>
+                <Button variant="ghost" className="w-full justify-start hover:text-blue-600">Features</Button>
+                <Button variant="ghost" className="w-full justify-start hover:text-blue-600">How It Works</Button>
+                <Button variant="ghost" className="w-full justify-start hover:text-blue-600">Pricing</Button>
               </>
             ) : (
               <>
-                <Button variant="ghost" className="w-full justify-start">
+                <Button variant="ghost" className="w-full justify-start hover:text-blue-600">
                   <BarChart3 className="h-4 w-4 mr-2" />
                   Dashboard
                 </Button>
-                <Button variant="ghost" className="w-full justify-start">
+                <Button variant="ghost" className="w-full justify-start hover:text-blue-600">
                   <Sparkles className="h-4 w-4 mr-2" />
                   Hiring Center
                 </Button>
-                <Button variant="ghost" className="w-full justify-start">
+                <Button variant="ghost" className="w-full justify-start hover:text-blue-600">
                   <FileText className="h-4 w-4 mr-2" />
                   Templates
                 </Button>

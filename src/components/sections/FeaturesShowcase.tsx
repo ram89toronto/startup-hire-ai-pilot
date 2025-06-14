@@ -25,7 +25,7 @@ export const FeaturesShowcase = () => {
         "Live Interview: Thread Puller",
         "Post-interview: Clarity Canvas"
       ],
-      color: "purple"
+      color: "indigo"
     },
     {
       icon: Users,
@@ -36,7 +36,7 @@ export const FeaturesShowcase = () => {
         "Tech specialist assessments",
         "Role-specific competencies"
       ],
-      color: "green"
+      color: "blue"
     },
     {
       icon: Zap,
@@ -47,7 +47,7 @@ export const FeaturesShowcase = () => {
         "Scaling challenges",
         "Crisis management"
       ],
-      color: "orange"
+      color: "indigo"
     },
     {
       icon: BarChart3,
@@ -58,7 +58,7 @@ export const FeaturesShowcase = () => {
         "Execution assessment",
         "Leadership evaluation"
       ],
-      color: "pink"
+      color: "blue"
     },
     {
       icon: Shield,
@@ -76,13 +76,9 @@ export const FeaturesShowcase = () => {
   const getFeatureColors = (color: string) => {
     const colors = {
       blue: "bg-blue-50 border-blue-200 text-blue-600",
-      purple: "bg-purple-50 border-purple-200 text-purple-600",
-      green: "bg-green-50 border-green-200 text-green-600",
-      orange: "bg-orange-50 border-orange-200 text-orange-600",
-      pink: "bg-pink-50 border-pink-200 text-pink-600",
       indigo: "bg-indigo-50 border-indigo-200 text-indigo-600"
     };
-    return colors[color as keyof typeof colors] || "bg-gray-50 border-gray-200 text-gray-600";
+    return colors[color as keyof typeof colors] || "bg-blue-50 border-blue-200 text-blue-600";
   };
 
   return (
@@ -113,7 +109,7 @@ export const FeaturesShowcase = () => {
                 <ul className="space-y-3">
                   {feature.features.map((item, itemIndex) => (
                     <li key={itemIndex} className="flex items-start gap-3">
-                      <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                      <Check className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
                       <span className="text-slate-600 text-sm lg:text-base">{item}</span>
                     </li>
                   ))}
