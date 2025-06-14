@@ -23,7 +23,7 @@ export const CTASection = () => {
             <Button 
               variant="outline" 
               size="lg" 
-              className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-10 py-6 text-lg font-semibold rounded-lg transition-all"
+              className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-10 py-6 text-lg font-semibold rounded-lg transition-all bg-transparent"
             >
               Schedule Demo
             </Button>
