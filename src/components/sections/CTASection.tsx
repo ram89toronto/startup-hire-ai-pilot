@@ -16,7 +16,7 @@ export const CTASection = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center pt-8">
-            <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 px-10 py-6 text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all">
+            <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-10 py-6 text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all">
               Start Your Free Trial
               <ArrowRight className="ml-3 h-6 w-6" />
             </Button>
