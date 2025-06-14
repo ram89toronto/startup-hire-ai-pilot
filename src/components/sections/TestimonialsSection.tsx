@@ -29,32 +29,32 @@ export const TestimonialsSection = () => {
   ];
 
   return (
-    <section className="py-16 lg:py-20 bg-slate-50">
+    <section className="py-20 lg:py-32 bg-slate-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl lg:text-4xl font-bold text-slate-800 mb-4">Trusted by High-Growth Startups</h2>
-          <p className="text-lg text-slate-600">See how founders are transforming their hiring process</p>
+        <div className="text-center mb-16 space-y-6">
+          <h2 className="text-4xl lg:text-5xl font-bold text-slate-800">Trusted by High-Growth Startups</h2>
+          <p className="text-xl text-slate-600 max-w-3xl mx-auto">See how founders are transforming their hiring process</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10 max-w-6xl mx-auto">
           {testimonials.map((testimonial, index) => (
-            <Card key={index} className="hover:shadow-lg transition-all bg-white h-full">
-              <CardContent className="p-6 flex flex-col h-full">
-                <div className="flex items-center gap-1 mb-4">
+            <Card key={index} className="hover:shadow-xl transition-all duration-300 bg-white h-full border-0 shadow-lg">
+              <CardContent className="p-8 flex flex-col h-full">
+                <div className="flex items-center gap-1 mb-6">
                   {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
-                <p className="text-slate-700 mb-6 italic flex-1 leading-relaxed">"{testimonial.content}"</p>
-                <div className="flex items-center gap-3 mt-auto">
-                  <Avatar className="h-10 w-10">
-                    <AvatarFallback className="bg-blue-100 text-blue-600 font-semibold">
+                <p className="text-slate-700 mb-8 italic flex-1 leading-relaxed text-lg">"{testimonial.content}"</p>
+                <div className="flex items-center gap-4 mt-auto">
+                  <Avatar className="h-12 w-12">
+                    <AvatarFallback className="bg-blue-100 text-blue-600 font-bold text-lg">
                       {testimonial.avatar}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <div className="font-semibold text-slate-800">{testimonial.name}</div>
-                    <div className="text-sm text-slate-600">{testimonial.role}</div>
+                    <div className="font-bold text-slate-800 text-lg">{testimonial.name}</div>
+                    <div className="text-slate-600">{testimonial.role}</div>
                   </div>
                 </div>
               </CardContent>

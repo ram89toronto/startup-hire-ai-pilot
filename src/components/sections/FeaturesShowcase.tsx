@@ -86,35 +86,35 @@ export const FeaturesShowcase = () => {
   };
 
   return (
-    <section className="py-16 lg:py-20">
+    <section className="py-20 lg:py-32 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl lg:text-4xl font-bold text-slate-800 mb-4">Your Unfair Advantage in Startup Hiring</h2>
-          <p className="text-lg text-slate-600 max-w-3xl mx-auto">
+        <div className="text-center mb-16 space-y-6">
+          <h2 className="text-4xl lg:text-5xl font-bold text-slate-800">Your Unfair Advantage in Startup Hiring</h2>
+          <p className="text-xl text-slate-600 max-w-4xl mx-auto leading-relaxed">
             Transform hiring from gut-feel to data-driven science with our AI-powered platform
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10 max-w-7xl mx-auto">
           {features.map((feature, index) => (
-            <Card key={index} className={`hover:shadow-lg transition-all border-2 ${getFeatureColors(feature.color)}`}>
-              <CardHeader className="pb-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${getFeatureColors(feature.color)}`}>
-                    <feature.icon className="h-6 w-6" />
+            <Card key={index} className={`hover:shadow-xl transition-all duration-300 border-2 h-full ${getFeatureColors(feature.color)} hover:scale-105`}>
+              <CardHeader className="pb-6">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${getFeatureColors(feature.color)}`}>
+                    <feature.icon className="h-7 w-7" />
                   </div>
-                  <CardTitle className="text-xl">{feature.title}</CardTitle>
                 </div>
-                <CardDescription className="text-slate-600 leading-relaxed">
+                <CardTitle className="text-xl lg:text-2xl mb-3 text-slate-800">{feature.title}</CardTitle>
+                <CardDescription className="text-slate-600 leading-relaxed text-base">
                   {feature.description}
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-0">
-                <ul className="space-y-2">
+                <ul className="space-y-3">
                   {feature.features.map((item, itemIndex) => (
-                    <li key={itemIndex} className="flex items-start gap-2 text-sm">
-                      <Check className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-slate-600">{item}</span>
+                    <li key={itemIndex} className="flex items-start gap-3">
+                      <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                      <span className="text-slate-600 text-sm lg:text-base">{item}</span>
                     </li>
                   ))}
                 </ul>

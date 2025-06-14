@@ -4,34 +4,44 @@ import { ArrowRight, Star } from "lucide-react";
 
 export const CTASection = () => {
   return (
-    <section className="py-16 lg:py-20 bg-gradient-to-r from-blue-600 to-indigo-700">
+    <section className="py-20 lg:py-32 bg-gradient-to-r from-blue-600 to-indigo-700">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+        <div className="max-w-5xl mx-auto space-y-8">
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight">
             Stop Missing Your Next Game-Changing Hire
           </h2>
-          <p className="text-lg sm:text-xl text-blue-100 mb-8 leading-relaxed">
+          <p className="text-xl sm:text-2xl text-blue-100 leading-relaxed max-w-4xl mx-auto">
             Every week that passes without this system is a week your startup might miss that 
             perfect candidate. The competition for top talent is fierce. Give yourself the unfair advantage.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-            <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-lg">
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center pt-8">
+            <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 px-10 py-6 text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all">
               Start Your Free Trial
-              <ArrowRight className="ml-2 h-5 w-5" />
+              <ArrowRight className="ml-3 h-6 w-6" />
             </Button>
-            <Button variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 text-lg">
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-10 py-6 text-lg font-semibold rounded-lg transition-all"
+            >
               Schedule Demo
             </Button>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-blue-100">
-            <div className="flex items-center gap-1">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-8 text-blue-100 pt-8">
+            <div className="flex items-center gap-2">
               {[...Array(5)].map((_, i) => (
-                <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
               ))}
             </div>
-            <span className="text-sm">No credit card required • 14-day free trial • Cancel anytime</span>
+            <div className="flex flex-col sm:flex-row items-center gap-4 text-lg">
+              <span>No credit card required</span>
+              <span className="hidden sm:inline">•</span>
+              <span>14-day free trial</span>
+              <span className="hidden sm:inline">•</span>
+              <span>Cancel anytime</span>
+            </div>
           </div>
         </div>
       </div>
