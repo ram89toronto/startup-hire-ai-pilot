@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,10 +5,73 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, Wand2, Download, FileText, Settings, Sparkles } from "lucide-react";
+import { Copy, Wand2, Download, FileText, Settings, Sparkles, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 import { AIConfigDialog } from "@/components/ai/AIConfigDialog";
 import { PDFPreviewDialog } from "@/components/pdf/PDFPreviewDialog";
+
+const generateRoleBasedContent = (formData) => {
+    const baseContent = `# Interview Guide for ${formData.roleTitle}
+## Company Context
+${formData.companyContext}
+## Key Challenges
+${formData.challenges || "No specific challenges mentioned"}
+## Core Values
+${formData.values || "Standard startup values"}`;
+
+    switch (formData.role) {
+        case 'software-engineer':
+            return `${baseContent}
+
+## Competency Matrix: Software Engineer
+### 1. Technical Excellence & System Design
+**Description:** Designs and implements robust, scalable, and maintainable systems.
+**Excellent:** Writes clean, well-tested code. Makes sound architectural decisions.
+**Poor:** Produces buggy code. Ignores best practices.
+### 2. Problem Solving
+**Description:** Effectively breaks down complex problems and finds practical solutions.
+**Excellent:** Analyzes issues from multiple angles. Proposes innovative solutions.
+**Poor:** Gets stuck on problems. Over-engineers simple tasks.
+
+## Scenario Questions
+- "Our system is experiencing 10x traffic growth. Walk me through scaling our infrastructure."
+- "Here’s a piece of legacy code with a bug. Find it, fix it, and explain your reasoning."`;
+        case 'product-owner':
+            return `${baseContent}
+
+## Competency Matrix: Product Owner
+### 1. Customer Centricity & Vision
+**Description:** Deeply understands customer needs and translates them into a compelling product vision.
+**Excellent:** Champions the user. Articulates a clear vision.
+**Poor:** Misinterprets user feedback. Lacks a clear product strategy.
+### 2. Prioritization & Execution
+**Description:** Ruthlessly prioritizes features to maximize impact and deliver value.
+**Excellent:** Uses data to make decisions. Manages the backlog effectively.
+**Poor:** Easily distracted by new ideas. Fails to ship features.
+
+## Scenario Questions
+- "We have ambiguous feedback from a major customer. How do you clarify their needs and define requirements?"
+- "Here are 10 feature requests and engineering estimates. How do you decide what to build next quarter?"`;
+        case 'ux-designer':
+            return `${baseContent}
+
+## Competency Matrix: UX/UI Designer
+### 1. User Empathy & Research
+**Description:** Gathers and synthesizes user insights to drive design decisions.
+**Excellent:** Conducts effective user research. Creates detailed user personas and journey maps.
+**Poor:** Designs based on personal preference. Ignores user data.
+### 2. Interaction & Visual Design
+**Description:** Creates intuitive, accessible, and aesthetically pleasing interfaces.
+**Excellent:** Produces pixel-perfect mockups and prototypes. Has a strong grasp of design principles.
+**Poor:** Cluttered and inconsistent designs. Poor user flow.
+
+## Scenario Questions
+- "Our app has a high drop-off rate during onboarding. Redesign the flow and justify your changes."
+- "Create a low-fidelity wireframe for a new feature that does X. Talk me through your design process."`;
+        default:
+            return "Please select a role to generate content.";
+    }
+}
 
 export const PromptGenerator = () => {
   const [formData, setFormData] = useState({
@@ -17,7 +79,8 @@ export const PromptGenerator = () => {
     companyContext: "",
     challenges: "",
     values: "",
-    aiProvider: "openai"
+    aiProvider: "openai",
+    role: "software-engineer"
   });
   const [generatedContent, setGeneratedContent] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -34,64 +97,12 @@ export const PromptGenerator = () => {
     
     // Simulate AI generation
     setTimeout(() => {
-      const content = `# Interview Guide for ${formData.roleTitle}
-
-## Company Context
-${formData.companyContext}
-
-## Key Challenges
-${formData.challenges || "No specific challenges mentioned"}
-
-## Core Values
-${formData.values || "Standard startup values"}
-
-## Competency Matrix
-
-### 1. Technical Excellence
-**Description:** Ability to deliver high-quality technical solutions
-**Excellent Performance:** Demonstrates deep technical knowledge, writes clean code, makes scalable architecture decisions
-**Poor Performance:** Struggles with basic concepts, produces buggy code, ignores best practices
-
-### 2. Startup Adaptability  
-**Description:** Thrives in fast-paced, uncertain environments
-**Excellent Performance:** Embraces change, pivots quickly, maintains quality under pressure
-**Poor Performance:** Resists change, overwhelmed by ambiguity, quality drops under stress
-
-### 3. Leadership Potential
-**Description:** Can guide and inspire team members
-**Excellent Performance:** Takes initiative, mentors others, drives consensus
-**Poor Performance:** Avoids responsibility, poor communication, creates conflict
-
-## Scenario Questions
-
-### Technical Challenge
-"Our system is experiencing 10x traffic growth overnight. Walk me through your approach to scaling our infrastructure in the next 48 hours."
-
-### Adaptability Test  
-"We need to pivot our product strategy based on user feedback. How would you lead your team through this transition?"
-
-### Leadership Scenario
-"Two team members are in conflict over technical decisions. How do you resolve this while maintaining team morale?"
-
-## Evaluation Rubric
-
-Rate each competency on a 1-5 scale:
-- 1: Well below expectations
-- 2: Below expectations  
-- 3: Meets expectations
-- 4: Exceeds expectations
-- 5: Outstanding performance
-
-## Lightning Questions
-- What's your contrarian view about our industry?
-- Tell me about creating something from nothing
-- How do you handle failure and bounce back?
-`;
+      const content = generateRoleBasedContent(formData);
       
       setGeneratedContent(content);
       setIsGenerating(false);
       toast.success("Interview guide generated successfully! (1 token used)");
-    }, 2000);
+    }, 1500);
   };
 
   const copyToClipboard = () => {
@@ -133,6 +144,34 @@ Rate each competency on a 1-5 scale:
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="role">Role Type *</Label>
+              <Select value={formData.role} onValueChange={(value) => setFormData({...formData, role: value})}>
+                <SelectTrigger id="role">
+                  <SelectValue placeholder="Select a role type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="software-engineer">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-blue-500" />
+                      <span>Software Engineer</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="product-owner">
+                    <div className="flex items-center gap-2">
+                      <UserCheck className="h-4 w-4 text-green-500" />
+                      <span>Product Owner</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="ux-designer">
+                    <div className="flex items-center gap-2">
+                      <Wand2 className="h-4 w-4 text-purple-500" />
+                      <span>UX/UI Designer</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div>
               <Label htmlFor="roleTitle">Role Title *</Label>
               <Input
