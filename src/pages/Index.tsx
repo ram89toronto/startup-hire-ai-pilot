@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
 import { Dashboard } from "@/components/dashboard/Dashboard";
 import { PromptGenerator } from "@/components/PromptGenerator";
 import { ScenarioBank } from "@/components/ScenarioBank";
@@ -212,6 +213,7 @@ const Index = () => {
 
           <PricingSection />
           <CTASection />
+          <Footer />
         </div>
       ) : (
         <div className="min-h-screen bg-slate-50">
