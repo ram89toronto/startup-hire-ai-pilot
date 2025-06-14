@@ -68,7 +68,7 @@ export const PricingSection = () => {
                 key={index} 
                 className={`relative hover:shadow-xl transition-all duration-300 ${plan.bgColor} ${
                   plan.popular 
-                    ? `border-2 ${plan.borderColor} scale-105 shadow-lg` 
+                    ? `border-2 ${plan.borderColor} shadow-lg` 
                     : `border ${plan.borderColor}`
                 }`}
               >
