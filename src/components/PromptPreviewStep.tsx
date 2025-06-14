@@ -2,27 +2,15 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { PDFPreviewDialog } from "@/components/pdf/PDFPreviewDialog";
+import { EnhancedRagChat } from "@/components/chat/EnhancedRagChat";
+import { GoogleApiToggles } from "@/components/google/GoogleApiToggles";
+import { TokenDisplay } from "@/components/tokens/TokenDisplay";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-
-/**
- * Simulates a "RAG Chat" feature where users can ask questions about
- * the generated interview scenario/content, and the system gives canned explanations.
- */
-function fakeRagChatResponse(question: string, { role, scenario }: any) {
-  // In production, swap with OpenAI API, etc.
-  if (!question || question.length < 3) return "Please ask a more specific question about this scenario.";
-  if (/trade[\s-]?offs?/i.test(question))
-    return "Trade-off questions help assess whether a candidate can reason about technical versus business constraints, revealing their judgment style.";
-  if (/how.*score|criteria/i.test(question))
-    return "Score candidates by their depth of reasoning, not just the 'right answer.' Look for practical thinking, clear trade-off articulation, and self-awareness of limits.";
-  if (/how.*should.*approach/i.test(question))
-    return "Look for candidates breaking down the problem into logical steps and validating assumptions.";
-  if (/redesign/i.test(question))
-    return "Expect the candidate to identify bottlenecks, collect user feedback, and propose iterative solutions aligned with business outcomes.";
-  return "Focus on how well the candidate explains their thinking. Strong evaluators use scenario-based questions to reveal true problem-solving ability.";
-}
+import { useTokens } from "@/hooks/useTokens";
+import { useGoogleApis } from "@/hooks/useGoogleApis";
+import { FileText, MessageCircle, Settings, Search, Sparkles } from "lucide-react";
 
 export function PromptPreviewStep({
   role,
@@ -37,70 +25,319 @@ export function PromptPreviewStep({
   setShowPdf: (v: boolean) => void;
   showPdf: boolean;
 }) {
-  const [ragQ, setRagQ] = useState("");
-  const [ragA, setRagA] = useState<string | null>(null);
+  const { consumeTokens, getRemainingTokens } = useTokens();
+  const { searchCompanyInfo, isSearching, config } = useGoogleApis();
+  const [enhancedContent, setEnhancedContent] = useState<string | null>(null);
+  const [isEnhancing, setIsEnhancing] = useState(false);
 
   const title = `Interview Guide - ${context.roleTitle || "Untitled"}`;
-  const generatedContent = `# ${context.roleTitle || "Role"}
+  const baseContent = `# ${context.roleTitle || "Role"}
+
 ## Company Context
 ${context.companyContext}
 ${context.challenges ? "\n\n## Key Challenges\n" + context.challenges : ""}
 ${context.values ? "\n\n## Core Values\n" + context.values : ""}
-${scenario ? "\n\n## Scenario\n" + scenario : ""}`;
+${scenario ? "\n\n## Interview Scenario\n" + scenario : ""}
 
-  function handleRagChat() {
-    if (!ragQ.trim()) return;
-    setRagA("...");
-    setTimeout(() => {
-      setRagA(fakeRagChatResponse(ragQ, { role, context, scenario }));
-    }, 400);
-  }
+## Evaluation Framework
+Use this structured approach to assess candidates:
+
+### Technical Competency (1-5)
+- Problem-solving methodology
+- Technical accuracy and depth
+- Best practices awareness
+
+### Communication Skills (1-5)
+- Clarity of explanation
+- Active listening
+- Stakeholder consideration
+
+### Cultural Alignment (1-5)
+- Company values alignment
+- Collaboration approach
+- Growth mindset demonstration
+
+### Scenario Performance (1-5)
+- Practical application
+- Decision-making process
+- Risk assessment
+
+**Total Score: ___/20**
+
+## Interview Process
+1. **Introduction** (5 min) - Role overview and expectations
+2. **Scenario Discussion** (25 min) - Present scenario and facilitate discussion  
+3. **Follow-up Questions** (15 min) - Probe deeper based on responses
+4. **Candidate Questions** (10 min) - Allow candidate to ask questions
+5. **Next Steps** (5 min) - Explain process and timeline
+
+## Red Flags to Watch
+- Overconfidence without substance
+- Inability to explain trade-offs
+- Poor communication or listening
+- Negative attitude toward collaboration
+- Unrealistic expectations
+
+## Success Indicators
+- Clear problem-solving approach
+- Thoughtful questions and considerations
+- Collaborative mindset
+- Alignment with company values
+- Realistic assessment of challenges`;
+
+  const handleEnhanceWithAI = async () => {
+    const remaining = getRemainingTokens();
+    if (remaining === 0) {
+      toast.error('No tokens remaining! Upgrade for unlimited enhancements.');
+      return;
+    }
+
+    setIsEnhancing(true);
+    
+    // Consume token for AI enhancement
+    const canProceed = await consumeTokens(2);
+    if (!canProceed) {
+      toast.error('Insufficient tokens for AI enhancement.');
+      setIsEnhancing(false);
+      return;
+    }
+
+    try {
+      // Search for additional context if Google APIs are enabled
+      let searchResults = [];
+      if (config.search || config.scholar || config.trends) {
+        searchResults = await searchCompanyInfo(context.companyContext, context.roleTitle);
+      }
+
+      // Simulate AI enhancement
+      setTimeout(() => {
+        const enhanced = baseContent + `
+
+## AI-Enhanced Insights
+${searchResults.length > 0 ? `
+### Market Intelligence
+${searchResults.map(result => `- **${result.title}**: ${result.snippet}`).join('\n')}
+` : ''}
+
+### Advanced Evaluation Criteria
+- **Industry Alignment**: Assess knowledge of current industry trends and challenges
+- **Innovation Potential**: Evaluate creative problem-solving and forward-thinking
+- **Adaptability**: Measure flexibility in changing requirements or constraints
+- **Leadership Potential**: Observe decision-making and influence capabilities
+
+### Behavioral Indicators
+- **High Performers**: Ask clarifying questions, consider multiple perspectives, acknowledge limitations
+- **Strong Candidates**: Show systematic thinking, communicate trade-offs clearly, demonstrate learning agility
+- **Concerns**: Make assumptions without validation, provide generic solutions, show rigidity in approach
+
+### Follow-up Question Bank
+**Technical Deep-dive:**
+- "Walk me through your debugging process for this scenario"
+- "How would you optimize this for scale?"
+- "What testing strategy would you implement?"
+
+**Collaboration Assessment:**
+- "How would you handle disagreement with this approach?"
+- "Describe how you'd communicate this to stakeholders"
+- "What would you need from the team to succeed?"
+
+**Strategic Thinking:**
+- "What's the biggest risk with this solution?"
+- "How does this fit into the broader product strategy?"
+- "What metrics would indicate success?"
+
+### Scoring Calibration
+**Score 5 (Exceptional)**: Exceeds expectations, demonstrates mastery, provides innovative insights
+**Score 4 (Strong)**: Meets all expectations, solid performance, good practical application
+**Score 3 (Adequate)**: Meets basic requirements, acceptable approach, minor gaps
+**Score 2 (Below Expectations)**: Significant gaps, unclear reasoning, needs substantial improvement
+**Score 1 (Poor)**: Major deficiencies, inappropriate approach, fundamental misunderstanding
+
+Generated with AI assistance and real-time market data.`;
+
+        setEnhancedContent(enhanced);
+        setIsEnhancing(false);
+        toast.success('Interview guide enhanced with AI insights!');
+      }, 2000);
+    } catch (error) {
+      setIsEnhancing(false);
+      toast.error('Enhancement failed. Please try again.');
+    }
+  };
+
+  const handleGeneratePDF = async () => {
+    const remaining = getRemainingTokens();
+    if (remaining === 0) {
+      toast.error('No tokens remaining! Upgrade for unlimited PDF generation.');
+      return;
+    }
+
+    if (!context.roleTitle || !context.companyContext || !scenario) {
+      toast.error("Fill out all required fields first.");
+      return;
+    }
+
+    const canProceed = await consumeTokens(1);
+    if (!canProceed) {
+      toast.error('Insufficient tokens for PDF generation.');
+      return;
+    }
+
+    setShowPdf(true);
+    toast.success('PDF generated successfully!');
+  };
+
+  const chatContext = {
+    role,
+    roleTitle: context.roleTitle,
+    companyContext: context.companyContext,
+    scenario,
+  };
 
   return (
-    <div>
-      <div className="mb-6 text-xl font-bold text-center">Preview & Interact</div>
-      <div className="bg-slate-100 rounded-lg p-4 mb-4">
-        {/* RAG chat box */}
-        <div className="flex gap-2 flex-col md:flex-row md:items-center">
-          <Input
-            placeholder="Ask about evaluation, criteria, or this scenario (e.g. How do I score this? What skills are assessed?)"
-            value={ragQ}
-            onChange={e => setRagQ(e.target.value)}
-            onKeyDown={e => { if (e.key === "Enter") handleRagChat(); }}
-          />
-          <Button variant="secondary" onClick={handleRagChat} disabled={!ragQ}>Ask Guide</Button>
-        </div>
-        {ragA && (
-          <div className="mt-2 rounded bg-white border p-3 text-slate-700 text-sm shadow-inner">
-            <b>AI:</b> {ragA}
-          </div>
-        )}
+    <div className="space-y-6">
+      <div className="text-center space-y-4">
+        <h2 className="text-3xl font-bold text-slate-800">Preview & Generate</h2>
+        <p className="text-lg text-slate-600">
+          Review your interview guide, enhance with AI, and export professionally
+        </p>
       </div>
-      <div className="flex justify-end mb-2">
-        <Button
-          variant="default"
-          onClick={() => {
-            if (!context.roleTitle || !context.companyContext || !scenario) {
-              toast.error("Fill out all required fields first.");
-              return;
-            }
-            setShowPdf(true);
-          }}
-        >
-          Preview & Download as PDF
-        </Button>
-      </div>
+
+      <TokenDisplay />
+
+      <Tabs defaultValue="preview" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="preview" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Preview
+          </TabsTrigger>
+          <TabsTrigger value="chat" className="flex items-center gap-2">
+            <MessageCircle className="h-4 w-4" />
+            AI Assistant
+          </TabsTrigger>
+          <TabsTrigger value="research" className="flex items-center gap-2">
+            <Search className="h-4 w-4" />
+            Research
+          </TabsTrigger>
+          <TabsTrigger value="settings" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Settings
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="preview" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle>Interview Guide Preview</CardTitle>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={handleEnhanceWithAI}
+                    disabled={isEnhancing || getRemainingTokens() < 2}
+                    className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200"
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    {isEnhancing ? 'Enhancing...' : 'Enhance with AI'}
+                  </Button>
+                  <Button
+                    onClick={handleGeneratePDF}
+                    disabled={getRemainingTokens() === 0}
+                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Generate PDF
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="bg-slate-50 p-6 rounded-lg max-h-[500px] overflow-y-auto">
+                <pre className="whitespace-pre-wrap text-sm text-slate-700 font-mono leading-relaxed">
+                  {enhancedContent || baseContent}
+                </pre>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="chat">
+          <EnhancedRagChat context={chatContext} />
+        </TabsContent>
+
+        <TabsContent value="research" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Market Research & Intelligence</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <GoogleApiToggles />
+              {(config.search || config.scholar || config.trends) && (
+                <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <h4 className="font-semibold text-blue-800 mb-2">Research Integration Active</h4>
+                  <p className="text-sm text-blue-700">
+                    Your interview guides will be automatically enhanced with real-time market data, 
+                    industry insights, and best practices from enabled sources.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="settings" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Advanced Settings</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 border rounded-lg">
+                  <h4 className="font-semibold mb-2">PDF Export Options</h4>
+                  <div className="space-y-2 text-sm text-slate-600">
+                    <label className="flex items-center gap-2">
+                      <input type="checkbox" defaultChecked />
+                      Include scoring rubrics
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input type="checkbox" defaultChecked />
+                      Add company branding
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input type="checkbox" />
+                      Generate multiple formats
+                    </label>
+                  </div>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <h4 className="font-semibold mb-2">AI Preferences</h4>
+                  <div className="space-y-2 text-sm text-slate-600">
+                    <label className="flex items-center gap-2">
+                      <input type="checkbox" defaultChecked />
+                      Include market insights
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input type="checkbox" defaultChecked />
+                      Bias detection alerts
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input type="checkbox" />
+                      Auto-save conversations
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
       <PDFPreviewDialog
         open={showPdf}
         onOpenChange={setShowPdf}
-        content={generatedContent}
+        content={enhancedContent || baseContent}
         title={title}
       />
-      <div className="bg-slate-50 p-4 rounded-lg mt-6">
-        <pre className="whitespace-pre-wrap text-[13px] text-slate-700 font-mono">
-          {generatedContent}
-        </pre>
-      </div>
     </div>
   );
 }
