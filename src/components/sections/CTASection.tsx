@@ -4,13 +4,13 @@ import { ArrowRight, Star } from "lucide-react";
 
 export const CTASection = () => {
   return (
-    <section className="py-20 bg-gradient-to-r from-blue-600 to-indigo-700">
-      <div className="container mx-auto px-4 text-center">
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-4xl font-bold text-white mb-4">
+    <section className="py-16 lg:py-20 bg-gradient-to-r from-blue-600 to-indigo-700">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
             Stop Missing Your Next Game-Changing Hire
           </h2>
-          <p className="text-xl text-blue-100 mb-8 leading-relaxed">
+          <p className="text-lg sm:text-xl text-blue-100 mb-8 leading-relaxed">
             Every week that passes without this system is a week your startup might miss that 
             perfect candidate. The competition for top talent is fierce. Give yourself the unfair advantage.
           </p>
@@ -25,7 +25,7 @@ export const CTASection = () => {
             </Button>
           </div>
 
-          <div className="flex items-center justify-center gap-2 text-blue-100">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-blue-100">
             <div className="flex items-center gap-1">
               {[...Array(5)].map((_, i) => (
                 <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />

@@ -51,25 +51,25 @@ export const Dashboard = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex justify-between items-start">
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-800">Hiring Dashboard</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-800">Hiring Dashboard</h1>
           <p className="text-slate-600 mt-1">Active campaigns: 2 • Candidates in pipeline: 24</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700">
+        <Button className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto">
           <Plus className="h-4 w-4 mr-2" />
           New Campaign
         </Button>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         {stats.map((stat, index) => (
           <Card key={index} className="hover:shadow-lg transition-shadow">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-4">
                 <div className={`w-12 h-12 rounded-full flex items-center justify-center ${getStatColor(stat.color)}`}>
                   <stat.icon className="h-6 w-6" />
                 </div>
@@ -82,7 +82,7 @@ export const Dashboard = () => {
                   <span className="text-green-600 font-medium">{stat.change}</span>
                 </div>
               </div>
-              <div className="mt-4">
+              <div>
                 <div className="text-2xl font-bold text-slate-800">{stat.value}</div>
                 <div className="text-sm text-slate-600">{stat.title}</div>
               </div>
@@ -109,15 +109,15 @@ export const Dashboard = () => {
       </Card>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-lg transition-all cursor-pointer">
           <CardContent className="p-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
                 <AlertTriangle className="h-6 w-6 text-white" />
               </div>
-              <div>
-                <h3 className="font-semibold text-slate-800">Generate Interview Kit</h3>
+              <div className="min-w-0">
+                <h3 className="font-semibold text-slate-800 mb-1">Generate Interview Kit</h3>
                 <p className="text-sm text-slate-600">Create AI-powered interview materials</p>
               </div>
             </div>
@@ -127,11 +127,11 @@ export const Dashboard = () => {
         <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:shadow-lg transition-all cursor-pointer">
           <CardContent className="p-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
                 <Calendar className="h-6 w-6 text-white" />
               </div>
-              <div>
-                <h3 className="font-semibold text-slate-800">Schedule Interviews</h3>
+              <div className="min-w-0">
+                <h3 className="font-semibold text-slate-800 mb-1">Schedule Interviews</h3>
                 <p className="text-sm text-slate-600">Manage your interview pipeline</p>
               </div>
             </div>
@@ -141,11 +141,11 @@ export const Dashboard = () => {
         <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:shadow-lg transition-all cursor-pointer">
           <CardContent className="p-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center flex-shrink-0">
                 <BarChart3 className="h-6 w-6 text-white" />
               </div>
-              <div>
-                <h3 className="font-semibold text-slate-800">View Analytics</h3>
+              <div className="min-w-0">
+                <h3 className="font-semibold text-slate-800 mb-1">View Analytics</h3>
                 <p className="text-sm text-slate-600">Track hiring performance metrics</p>
               </div>
             </div>
