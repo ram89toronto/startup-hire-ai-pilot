@@ -1,4 +1,8 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Session } from "@supabase/supabase-js";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Dashboard } from "@/components/dashboard/Dashboard";
@@ -15,14 +19,49 @@ import { ArrowRight, CheckCircle, Play, Star, Zap, Users, TrendingUp, Clock, Shi
 import { GeminiApiKeySetting } from "@/components/settings/GeminiApiKeySetting";
 
 const Index = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [activeView, setActiveView] = useState<"dashboard" | "prompt-generator" | "analytics" | "settings">("dashboard");
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
   
+  const [activeView, setActiveView] = useState<"dashboard" | "prompt-generator" | "analytics" | "settings">("dashboard");
+
+  useEffect(() => {
+    const getSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+      setLoading(false);
+    };
+
+    getSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+  
+  const isLoggedIn = !!session;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen app-gradient-bg flex items-center justify-center">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen app-gradient-bg font-primary">
       <Header 
         isLoggedIn={isLoggedIn} 
-        setIsLoggedIn={setIsLoggedIn}
+        setIsLoggedIn={() => {
+          if (isLoggedIn) {
+            supabase.auth.signOut().then(() => navigate('/'));
+          } else {
+            navigate('/auth');
+          }
+        }}
         activeView={activeView}
         setActiveView={setActiveView}
       />
@@ -96,7 +135,7 @@ const Index = () => {
                   <Button 
                     size="lg" 
                     className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-12 py-8 text-xl font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1 hover:scale-105"
-                    onClick={() => setIsLoggedIn(true)}
+                    onClick={() => navigate('/auth')}
                   >
                     Start Hiring Smarter Today
                     <ArrowRight className="ml-3 h-6 w-6" />
@@ -181,7 +220,7 @@ const Index = () => {
                   <Button 
                     size="lg" 
                     className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-12 py-6 text-xl font-bold rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
-                    onClick={() => setIsLoggedIn(true)}
+                    onClick={() => navigate('/auth')}
                   >
                     Fix Your Hiring Process Now
                     <Rocket className="ml-3 h-6 w-6" />
@@ -230,7 +269,7 @@ const Index = () => {
           >
             {/* The Tab Navigation has been removed, as the Header now controls the view. */}
             
-            {activeView === "dashboard" && <Dashboard />}
+            {activeView === "dashboard" && <Dashboard session={session} />}
 
             {activeView === "prompt-generator" && (
               <div className="max-w-7xl mx-auto space-y-20">

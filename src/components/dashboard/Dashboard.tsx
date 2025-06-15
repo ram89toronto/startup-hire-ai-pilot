@@ -1,42 +1,67 @@
+
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Session } from "@supabase/supabase-js";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Users, Calendar, Target, Clock, Plus, TrendingUp, TrendingDown, AlertTriangle, BarChart3 } from "lucide-react";
+import { Users, Calendar, Target, Clock, Plus, TrendingUp, TrendingDown, AlertTriangle, BarChart3, LogOut, Loader2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export const Dashboard = () => {
+type DashboardProps = {
+  session: Session | null;
+};
+
+const StatCardSkeleton = () => (
+  <Card className="saas-card">
+    <CardContent className="p-6">
+      <Skeleton className="h-14 w-14 rounded-full mb-4" />
+      <Skeleton className="h-8 w-24 mb-1" />
+      <Skeleton className="h-5 w-32" />
+    </CardContent>
+  </Card>
+);
+
+export const Dashboard = ({ session }: DashboardProps) => {
+
+  const { data: campaigns, isLoading: isLoadingCampaigns } = useQuery({
+    queryKey: ['campaigns', session?.user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('hiring_campaigns')
+        .select('id, role_title, status, created_at, department')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw new Error(error.message);
+      return data;
+    },
+    enabled: !!session?.user?.id,
+  });
+
+  const campaignIds = campaigns?.map(c => c.id) || [];
+
+  const { data: candidates, isLoading: isLoadingCandidates } = useQuery({
+    queryKey: ['candidates', campaignIds],
+    queryFn: async () => {
+        if (campaignIds.length === 0) return [];
+        const { data, error } = await supabase
+            .from('candidates')
+            .select('id')
+            .in('campaign_id', campaignIds);
+
+        if (error) throw new Error(error.message);
+        return data;
+    },
+    enabled: !isLoadingCampaigns && campaignIds.length > 0,
+  });
+
+  const isLoading = isLoadingCampaigns || isLoadingCandidates;
+
   const stats = [
-    {
-      title: "Total Candidates",
-      value: "24",
-      change: "+12%",
-      trending: "up",
-      icon: Users,
-      color: "blue"
-    },
-    {
-      title: "Interviews Scheduled",
-      value: "8",
-      change: "+8%",
-      trending: "up",
-      icon: Calendar,
-      color: "teal"
-    },
-    {
-      title: "Match Score Avg",
-      value: "87%",
-      change: "+15%",
-      trending: "up",
-      icon: Target,
-      color: "purple"
-    },
-    {
-      title: "Days to Hire",
-      value: "4.2",
-      change: "-23%",
-      trending: "down",
-      icon: Clock,
-      color: "rose"
-    }
+    { title: "Total Candidates", value: candidates?.length ?? 0, icon: Users, color: "blue", change: "+12%", trending: "up" },
+    { title: "Interviews Scheduled", value: 8, icon: Calendar, color: "teal", change: "+8%", trending: "up" },
+    { title: "Match Score Avg", value: "87%", icon: Target, color: "purple", change: "+15%", trending: "up" },
+    { title: "Days to Hire", value: "4.2", icon: Clock, color: "rose", change: "-23%", trending: "down" }
   ];
 
   const getStatColor = (color: string) => {
@@ -48,6 +73,10 @@ export const Dashboard = () => {
     };
     return colors[color as keyof typeof colors] || "bg-gray-100 text-gray-600";
   };
+  
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto font-primary">
@@ -55,41 +84,52 @@ export const Dashboard = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
         <div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-primary drop-shadow-sm font-primary">Hiring Dashboard</h1>
-          <p className="text-muted-foreground mt-1">Active campaigns: 2 • Candidates in pipeline: 24</p>
+          <p className="text-muted-foreground mt-1">
+            {isLoading ? "Loading data..." : `Active campaigns: ${campaigns?.length ?? 0} • Candidates in pipeline: ${candidates?.length ?? 0}`}
+          </p>
         </div>
-        <Button className="app-gradient-bg hover:brightness-110 text-white shadow-lg w-full sm:w-auto rounded-full font-primary font-semibold text-lg px-7 py-4">
-          <Plus className="h-4 w-4 mr-2" />
-          New Campaign
-        </Button>
+        <div className="flex items-center gap-2">
+            <Button className="app-gradient-bg hover:brightness-110 text-white shadow-lg sm:w-auto rounded-full font-primary font-semibold text-lg px-7 py-4">
+              <Plus className="h-4 w-4 mr-2" />
+              New Campaign
+            </Button>
+            <Button onClick={handleLogout} variant="outline" className="rounded-full p-4 h-auto aspect-square">
+                <LogOut className="h-5 w-5" />
+            </Button>
+        </div>
       </div>
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-        {stats.map((stat, index) => (
-          <Card
-            key={index}
-            className="saas-card hover:brightness-105 hover:scale-[1.025] transition-all duration-200 font-primary"
-          >
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className={`w-14 h-14 rounded-full flex items-center justify-center shadow-sm ${getStatColor(stat.color)}`}>
-                  <stat.icon className="h-7 w-7" />
-                </div>
-                <div className="flex items-center gap-1 text-sm">
-                  {stat.trending === "up" ? (
-                    <TrendingUp className="h-4 w-4 text-green-500" />
-                  ) : (
-                    <TrendingDown className="h-4 w-4 text-rose-500" />
-                  )}
-                  <span className={`ml-1 font-bold ${stat.trending === "up" ? "text-green-600" : "text-rose-600"}`}>{stat.change}</span>
-                </div>
-              </div>
-              <div>
-                <div className="text-3xl font-extrabold text-primary">{stat.value}</div>
-                <div className="text-md text-muted-foreground">{stat.title}</div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+        {isLoading ? (
+            Array.from({ length: 4 }).map((_, i) => <StatCardSkeleton key={i} />)
+        ) : (
+            stats.map((stat, index) => (
+              <Card
+                key={index}
+                className="saas-card hover:brightness-105 hover:scale-[1.025] transition-all duration-200 font-primary"
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`w-14 h-14 rounded-full flex items-center justify-center shadow-sm ${getStatColor(stat.color)}`}>
+                      <stat.icon className="h-7 w-7" />
+                    </div>
+                    <div className="flex items-center gap-1 text-sm">
+                      {stat.trending === "up" ? (
+                        <TrendingUp className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <TrendingDown className="h-4 w-4 text-rose-500" />
+                      )}
+                      <span className={`ml-1 font-bold ${stat.trending === "up" ? "text-green-600" : "text-rose-600"}`}>{stat.change}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-3xl font-extrabold text-primary">{stat.value}</div>
+                    <div className="text-md text-muted-foreground">{stat.title}</div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+        )}
       </div>
       {/* Active Campaigns */}
       <Card className="saas-card">
@@ -97,12 +137,34 @@ export const Dashboard = () => {
           <CardTitle className="text-primary">Active Campaigns</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-12 font-primary">
-            <Users className="h-16 w-16 text-blue-200 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-primary mb-2">No campaigns yet</h3>
-            <p className="text-muted-foreground mb-6">Create your first hiring campaign to get started</p>
-            <Button className="app-gradient-bg rounded-full text-white font-bold shadow hover:brightness-110 px-8 py-4">Create Campaign</Button>
-          </div>
+            {isLoading ? (
+                <div className="text-center py-12 flex items-center justify-center gap-2 text-muted-foreground">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span>Loading campaigns...</span>
+                </div>
+            ) : campaigns && campaigns.length > 0 ? (
+                <ul className="space-y-3">
+                    {campaigns.map(campaign => (
+                        <li key={campaign.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border">
+                            <div>
+                                <h3 className="font-semibold text-primary">{campaign.role_title}</h3>
+                                <p className="text-sm text-muted-foreground">{campaign.department || 'No department'}</p>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <Badge variant={campaign.status === 'active' ? 'default' : 'secondary'}>{campaign.status}</Badge>
+                                <Button variant="outline" size="sm">View</Button>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            ) : (
+              <div className="text-center py-12 font-primary">
+                <Users className="h-16 w-16 text-blue-200 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-primary mb-2">No campaigns yet</h3>
+                <p className="text-muted-foreground mb-6">Create your first hiring campaign to get started</p>
+                <Button className="app-gradient-bg rounded-full text-white font-bold shadow hover:brightness-110 px-8 py-4">Create Campaign</Button>
+              </div>
+            )}
         </CardContent>
       </Card>
       {/* Quick Actions */}
