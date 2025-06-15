@@ -2,11 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Send, Sparkles, Paperclip, Bolt } from 'lucide-react';
+import { Send, Sparkles, Paperclip, Bolt, Loader2 } from 'lucide-react';
 import { useTokens } from '@/hooks/useTokens';
 import { toast } from 'sonner';
 import { ChatMessageBubble } from "./ChatMessageBubble";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { useGeminiApiKey } from '@/hooks/useGeminiApiKey';
 
 interface ChatMessage {
   id: string;
@@ -43,8 +44,7 @@ export const EnhancedRagChat = ({ context }: EnhancedRagChatProps) => {
   ]);
   
   const [input, setInput] = useState('');
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem('gemini-api-key') || '');
-  const [isApiKeySet, setIsApiKeySet] = useState(() => !!localStorage.getItem('gemini-api-key'));
+  const { apiKey, isLoading: isApiKeyLoading, saveApiKey, isSaving } = useGeminiApiKey();
   const [tempApiKey, setTempApiKey] = useState('');
 
   const { consumeTokens, getRemainingTokens } = useTokens();
@@ -53,16 +53,6 @@ export const EnhancedRagChat = ({ context }: EnhancedRagChatProps) => {
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-  
-  useEffect(() => {
-    if (apiKey) {
-      localStorage.setItem('gemini-api-key', apiKey);
-      setIsApiKeySet(true);
-    } else {
-      localStorage.removeItem('gemini-api-key');
-      setIsApiKeySet(false);
-    }
-  }, [apiKey]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -72,8 +62,8 @@ export const EnhancedRagChat = ({ context }: EnhancedRagChatProps) => {
       return;
     }
 
-    const remainingTokens = getRemainingTokens();
-    if (remainingTokens === 0) {
+    const canConsume = await consumeTokens(1);
+    if (!canConsume) {
       toast.error('No tokens remaining! Upgrade for unlimited chat.');
       return;
     }
@@ -88,7 +78,6 @@ export const EnhancedRagChat = ({ context }: EnhancedRagChatProps) => {
     const currentInput = input;
     setMessages(prev => [...prev, userMessage]);
     setInput('');
-    await consumeTokens(1);
 
     try {
       const genAI = new GoogleGenerativeAI(apiKey);
@@ -145,7 +134,15 @@ export const EnhancedRagChat = ({ context }: EnhancedRagChatProps) => {
     setTimeout(() => handleSend(), 100);
   };
 
-  if (!isApiKeySet) {
+  if (isApiKeyLoading) {
+    return (
+        <div className="flex flex-col h-full w-full bg-white md:rounded-lg shadow-lg border border-slate-100/70 p-6 items-center justify-center">
+             <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+        </div>
+    );
+  }
+
+  if (!apiKey) {
     return (
       <div className="flex flex-col h-full w-full bg-white md:rounded-lg shadow-lg border border-slate-100/70 p-6 items-center justify-center">
         <div className="max-w-sm text-center">
@@ -160,12 +157,14 @@ export const EnhancedRagChat = ({ context }: EnhancedRagChatProps) => {
               placeholder="Paste your API Key here"
               value={tempApiKey}
               onChange={(e) => setTempApiKey(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') { if (tempApiKey.trim()) { setApiKey(tempApiKey.trim()); }}}}
+              onKeyDown={e => { if (e.key === 'Enter' && tempApiKey.trim()) { saveApiKey(tempApiKey.trim()) }}}
             />
-            <Button onClick={() => { if (tempApiKey.trim()) { setApiKey(tempApiKey.trim()); }}}>Save</Button>
+            <Button onClick={() => { if (tempApiKey.trim()) { saveApiKey(tempApiKey.trim()) }}} disabled={isSaving || !tempApiKey.trim()}>
+                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save'}
+            </Button>
           </div>
           <p className="text-xs text-slate-500 mt-4">
-            You can get one from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-purple-600 underline font-medium">Google AI Studio</a>. Your key is stored securely in your browser's local storage.
+            You can get one from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-purple-600 underline font-medium">Google AI Studio</a>. Your key is stored securely in your user profile.
           </p>
         </div>
       </div>
@@ -186,7 +185,7 @@ export const EnhancedRagChat = ({ context }: EnhancedRagChatProps) => {
           </span>
         </div>
         <Badge variant="secondary" className="text-xs">
-          {getRemainingTokens()} tokens
+          {getRemainingTokens() === Infinity ? 'Unlimited' : `${getRemainingTokens()} tokens left`}
         </Badge>
       </header>
 
@@ -243,7 +242,7 @@ export const EnhancedRagChat = ({ context }: EnhancedRagChatProps) => {
           value={input}
           onChange={e => setInput(e.target.value)}
           placeholder="Type your message..."
-          disabled={getRemainingTokens() === 0 || !isApiKeySet}
+          disabled={getRemainingTokens() === 0 || !apiKey}
           className="flex-1 border-slate-200 focus:border-purple-400 text-[1rem] bg-slate-50"
           aria-label="Chat message input"
           onKeyDown={e => {
@@ -256,7 +255,7 @@ export const EnhancedRagChat = ({ context }: EnhancedRagChatProps) => {
         {/* Send button */}
         <Button
           type="submit"
-          disabled={!input.trim() || getRemainingTokens() === 0 || !isApiKeySet}
+          disabled={!input.trim() || getRemainingTokens() === 0 || !apiKey}
           className="bg-purple-600 hover:bg-purple-700 rounded-full px-3 py-2 flex items-center justify-center focus-visible:ring-2 focus:ring-purple-300"
           aria-label="Send message"
         >

@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { GoogleAuthButton } from "./GoogleAuthButton";
 import { PasswordReset } from "./PasswordReset";
 import { UserProfile } from "./UserProfile";
+import { useTokens } from "@/hooks/useTokens";
 
 interface AuthSectionProps {
   isLoggedIn: boolean;
@@ -23,6 +24,7 @@ export const AuthSection = ({ isLoggedIn, setIsLoggedIn }: AuthSectionProps) => 
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [signupData, setSignupData] = useState({ name: "", email: "", password: "" });
+  const { getRemainingTokens, tokens } = useTokens();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -86,12 +88,17 @@ export const AuthSection = ({ isLoggedIn, setIsLoggedIn }: AuthSectionProps) => 
   };
 
   if (isLoggedIn) {
+    const remainingTokens = getRemainingTokens();
     return (
       <>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 bg-white dark:bg-gray-800 px-3 py-2 rounded-lg border">
-            <span className="text-sm font-medium">5 tokens left</span>
-            <Button size="sm" variant="outline">Upgrade</Button>
+            <span className="text-sm font-medium">
+              {remainingTokens === Infinity ? "Unlimited" : `${remainingTokens} tokens left`}
+            </span>
+            {tokens.planType === 'free' && (
+              <Button size="sm" variant="outline">Upgrade</Button>
+            )}
           </div>
           <Button variant="ghost" onClick={() => setShowUserProfile(true)}>
             <Settings className="h-4 w-4 mr-2" />

@@ -172,6 +172,9 @@ export type Database = {
           gemini_api_key: string | null
           id: string
           subscription_tier: string | null
+          tokens_last_reset: string
+          tokens_limit: number
+          tokens_used: number
         }
         Insert: {
           avatar_url?: string | null
@@ -182,6 +185,9 @@ export type Database = {
           gemini_api_key?: string | null
           id: string
           subscription_tier?: string | null
+          tokens_last_reset?: string
+          tokens_limit?: number
+          tokens_used?: number
         }
         Update: {
           avatar_url?: string | null
@@ -192,6 +198,9 @@ export type Database = {
           gemini_api_key?: string | null
           id?: string
           subscription_tier?: string | null
+          tokens_last_reset?: string
+          tokens_limit?: number
+          tokens_used?: number
         }
         Relationships: []
       }
