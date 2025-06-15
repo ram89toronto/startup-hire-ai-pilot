@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -16,11 +15,16 @@ import { ArrowRight, CheckCircle, Play, Star, Zap, Users, TrendingUp, Clock, Shi
 
 const Index = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeView, setActiveView] = useState<"dashboard" | "prompt-generator" | "analytics" | "settings">("dashboard");
   
   return (
     <div className="min-h-screen bg-white">
-      <Header isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
+      <Header 
+        isLoggedIn={isLoggedIn} 
+        setIsLoggedIn={setIsLoggedIn}
+        activeView={activeView}
+        setActiveView={setActiveView}
+      />
 
       {!isLoggedIn ? (
         <div className="w-full">
@@ -219,35 +223,11 @@ const Index = () => {
       ) : (
         <div className="min-h-screen bg-slate-50">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {/* Tab Navigation */}
-            <div className="flex justify-center mb-12">
-              <div className="flex bg-white rounded-xl p-2 shadow-sm border">
-                <button
-                  onClick={() => setActiveTab("dashboard")}
-                  className={`px-8 py-4 rounded-lg text-sm font-medium transition-all ${
-                    activeTab === "dashboard" 
-                      ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md" 
-                      : "text-slate-600 hover:text-slate-800 hover:bg-slate-50"
-                  }`}
-                >
-                  Dashboard
-                </button>
-                <button
-                  onClick={() => setActiveTab("hiring-center")}
-                  className={`px-8 py-4 rounded-lg text-sm font-medium transition-all ${
-                    activeTab === "hiring-center" 
-                      ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md" 
-                      : "text-slate-600 hover:text-slate-800 hover:bg-slate-50"
-                  }`}
-                >
-                  Hiring Center
-                </button>
-              </div>
-            </div>
+            {/* The Tab Navigation has been removed, as the Header now controls the view. */}
+            
+            {activeView === "dashboard" && <Dashboard />}
 
-            {activeTab === "dashboard" ? (
-              <Dashboard />
-            ) : (
+            {activeView === "prompt-generator" && (
               <div className="max-w-7xl mx-auto space-y-20">
                 <div className="text-center space-y-6">
                   <h2 className="text-4xl sm:text-5xl font-bold text-slate-800">Your Hiring Command Center</h2>
@@ -257,6 +237,20 @@ const Index = () => {
                 <PromptGenerator />
                 <ScenarioBank />
                 <LightningQuestions />
+              </div>
+            )}
+
+            {activeView === "analytics" && (
+              <div className="text-center py-20">
+                <h2 className="text-3xl font-bold text-slate-800">Analytics</h2>
+                <p className="text-slate-500 mt-2">This feature is coming soon!</p>
+              </div>
+            )}
+
+            {activeView === "settings" && (
+              <div className="text-center py-20">
+                <h2 className="text-3xl font-bold text-slate-800">Settings</h2>
+                <p className="text-slate-500 mt-2">This feature is coming soon!</p>
               </div>
             )}
           </div>
