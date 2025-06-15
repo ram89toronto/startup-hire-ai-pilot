@@ -31,16 +31,19 @@ const Auth = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: `${window.location.origin}/`,
       },
     });
     if (error) {
       toast.error(error.message);
-    } else {
+    } else if (data.user && !data.session) {
+      toast.info("This email is already registered. Please check your email for the confirmation link or sign in.");
+    }
+    else {
       toast.success('Check your email for the confirmation link!');
     }
     setLoading(false);
