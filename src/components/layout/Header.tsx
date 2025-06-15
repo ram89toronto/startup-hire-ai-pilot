@@ -1,100 +1,99 @@
 
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Sparkles, BarChart3, FileText, Users, Menu, X } from "lucide-react";
 import { AuthSection } from "@/components/auth/AuthSection";
-import { useState } from "react";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { MessageSquare, BarChart3, Settings, Menu, X } from "lucide-react";
 
 interface HeaderProps {
+  activeView: "dashboard" | "prompt-generator" | "analytics" | "settings";
+  setActiveView: (view: "dashboard" | "prompt-generator" | "analytics" | "settings") => void;
   isLoggedIn: boolean;
   setIsLoggedIn: (value: boolean) => void;
 }
 
-export const Header = ({ isLoggedIn, setIsLoggedIn }: HeaderProps) => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+export const Header = ({ activeView, setActiveView, isLoggedIn, setIsLoggedIn }: HeaderProps) => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const navItems = [
+    { id: "dashboard", label: "Dashboard", icon: BarChart3 },
+    { id: "prompt-generator", label: "Interview Kit", icon: MessageSquare },
+    { id: "analytics", label: "Analytics", icon: BarChart3 },
+    { id: "settings", label: "Settings", icon: Settings },
+  ] as const;
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <header className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center gap-8">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                <Sparkles className="h-5 w-5 text-white" />
-              </div>
-              <span className="text-xl font-bold text-slate-800">Hiring Powerhouse</span>
-            </div>
-            
-            {isLoggedIn && (
-              <nav className="hidden lg:flex items-center gap-6">
-                <Button variant="ghost" className="flex items-center gap-2 hover:text-blue-600">
-                  <BarChart3 className="h-4 w-4" />
-                  Dashboard
-                </Button>
-                <Button variant="ghost" className="flex items-center gap-2 hover:text-blue-600">
-                  <Sparkles className="h-4 w-4" />
-                  Hiring Center
-                </Button>
-                <Button variant="ghost" className="flex items-center gap-2 hover:text-blue-600">
-                  <FileText className="h-4 w-4" />
-                  Templates
-                </Button>
-              </nav>
-            )}
+          {/* Logo */}
+          <div className="flex items-center">
+            <h1 className="text-xl font-bold text-blue-600 dark:text-blue-400">
+              HireGuide AI
+            </h1>
           </div>
-          
-          <div className="flex items-center gap-4">
-            {!isLoggedIn && (
-              <nav className="hidden md:flex items-center gap-6">
-                <Button variant="ghost" className="hover:text-blue-600">Features</Button>
-                <Button variant="ghost" className="hover:text-blue-600">How It Works</Button>
-                <Button variant="ghost" className="hover:text-blue-600">Pricing</Button>
-              </nav>
-            )}
-            
-            <div className="hidden sm:block">
-              <AuthSection isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
-            </div>
 
+          {/* Desktop Navigation */}
+          {isLoggedIn && (
+            <nav className="hidden md:flex space-x-1">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Button
+                    key={item.id}
+                    variant={activeView === item.id ? "default" : "ghost"}
+                    onClick={() => setActiveView(item.id as any)}
+                    className="flex items-center gap-2"
+                  >
+                    <Icon className="h-4 w-4" />
+                    {item.label}
+                  </Button>
+                );
+              })}
+            </nav>
+          )}
+
+          {/* Actions */}
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <AuthSection isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
+            
             {/* Mobile menu button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="sm:hidden"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
+            {isLoggedIn && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="md:hidden"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </Button>
+            )}
           </div>
         </div>
 
-        {/* Mobile menu */}
-        {mobileMenuOpen && (
-          <div className="sm:hidden border-t bg-white py-4 space-y-2">
-            {!isLoggedIn ? (
-              <>
-                <Button variant="ghost" className="w-full justify-start hover:text-blue-600">Features</Button>
-                <Button variant="ghost" className="w-full justify-start hover:text-blue-600">How It Works</Button>
-                <Button variant="ghost" className="w-full justify-start hover:text-blue-600">Pricing</Button>
-              </>
-            ) : (
-              <>
-                <Button variant="ghost" className="w-full justify-start hover:text-blue-600">
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  Dashboard
-                </Button>
-                <Button variant="ghost" className="w-full justify-start hover:text-blue-600">
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  Hiring Center
-                </Button>
-                <Button variant="ghost" className="w-full justify-start hover:text-blue-600">
-                  <FileText className="h-4 w-4 mr-2" />
-                  Templates
-                </Button>
-              </>
-            )}
-            <div className="pt-2">
-              <AuthSection isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
-            </div>
+        {/* Mobile Navigation */}
+        {isLoggedIn && isMobileMenuOpen && (
+          <div className="md:hidden border-t border-gray-200 dark:border-gray-700 py-3">
+            <nav className="space-y-1">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Button
+                    key={item.id}
+                    variant={activeView === item.id ? "default" : "ghost"}
+                    onClick={() => {
+                      setActiveView(item.id as any);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full justify-start gap-2"
+                  >
+                    <Icon className="h-4 w-4" />
+                    {item.label}
+                  </Button>
+                );
+              })}
+            </nav>
           </div>
         )}
       </div>
