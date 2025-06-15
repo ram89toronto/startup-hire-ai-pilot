@@ -55,10 +55,10 @@ export const Dashboard = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-800">Hiring Dashboard</h1>
-          <p className="text-slate-600 mt-1">Active campaigns: 2 • Candidates in pipeline: 24</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-blue-800 drop-shadow-sm">Hiring Dashboard</h1>
+          <p className="text-slate-700 mt-1">Active campaigns: 2 • Candidates in pipeline: 24</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto">
+        <Button className="bg-blue-700 hover:bg-blue-800 text-white shadow-lg w-full sm:w-auto">
           <Plus className="h-4 w-4 mr-2" />
           New Campaign
         </Button>
@@ -67,24 +67,27 @@ export const Dashboard = () => {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         {stats.map((stat, index) => (
-          <Card key={index} className="hover:shadow-lg transition-shadow">
+          <Card
+            key={index}
+            className="bg-gradient-to-br from-white via-sky-50 to-blue-50 border border-blue-100 hover:shadow-xl transition-shadow"
+          >
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${getStatColor(stat.color)}`}>
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-sm ${getStatColor(stat.color)}`}>
                   <stat.icon className="h-6 w-6" />
                 </div>
                 <div className="flex items-center gap-1 text-sm">
                   {stat.trending === "up" ? (
-                    <TrendingUp className="h-4 w-4 text-green-600" />
+                    <TrendingUp className="h-4 w-4 text-green-500" />
                   ) : (
-                    <TrendingDown className="h-4 w-4 text-green-600" />
+                    <TrendingDown className="h-4 w-4 text-red-500" />
                   )}
-                  <span className="text-green-600 font-medium">{stat.change}</span>
+                  <span className={`font-medium ${stat.trending === "up" ? "text-green-600" : "text-red-600"}`}>{stat.change}</span>
                 </div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-slate-800">{stat.value}</div>
-                <div className="text-sm text-slate-600">{stat.title}</div>
+                <div className="text-2xl font-bold text-blue-900">{stat.value}</div>
+                <div className="text-sm text-slate-700">{stat.title}</div>
               </div>
             </CardContent>
           </Card>
@@ -92,16 +95,16 @@ export const Dashboard = () => {
       </div>
 
       {/* Active Campaigns */}
-      <Card>
+      <Card className="border border-blue-100 bg-white/95 shadow">
         <CardHeader>
-          <CardTitle>Active Campaigns</CardTitle>
+          <CardTitle className="text-blue-700">Active Campaigns</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-12">
-            <Users className="h-16 w-16 text-slate-300 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-slate-800 mb-2">No campaigns yet</h3>
-            <p className="text-slate-600 mb-6">Create your first hiring campaign to get started</p>
-            <Button className="bg-blue-600 hover:bg-blue-700">
+            <Users className="h-16 w-16 text-blue-200 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-blue-900 mb-2">No campaigns yet</h3>
+            <p className="text-slate-700 mb-6">Create your first hiring campaign to get started</p>
+            <Button className="bg-blue-700 hover:bg-blue-800 text-white shadow">
               Create Campaign
             </Button>
           </div>
@@ -110,43 +113,43 @@ export const Dashboard = () => {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-lg transition-all cursor-pointer">
+        <Card className="bg-gradient-to-br from-blue-100 to-blue-50/70 border-blue-200 hover:shadow-lg transition-all cursor-pointer">
           <CardContent className="p-6">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
                 <AlertTriangle className="h-6 w-6 text-white" />
               </div>
               <div className="min-w-0">
-                <h3 className="font-semibold text-slate-800 mb-1">Generate Interview Kit</h3>
-                <p className="text-sm text-slate-600">Create AI-powered interview materials</p>
+                <h3 className="font-semibold text-blue-900 mb-1">Generate Interview Kit</h3>
+                <p className="text-sm text-slate-700">Create AI-powered interview materials</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:shadow-lg transition-all cursor-pointer">
+        <Card className="bg-gradient-to-br from-purple-100 to-purple-50/70 border-purple-200 hover:shadow-lg transition-all cursor-pointer">
           <CardContent className="p-6">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
                 <Calendar className="h-6 w-6 text-white" />
               </div>
               <div className="min-w-0">
-                <h3 className="font-semibold text-slate-800 mb-1">Schedule Interviews</h3>
-                <p className="text-sm text-slate-600">Manage your interview pipeline</p>
+                <h3 className="font-semibold text-purple-900 mb-1">Schedule Interviews</h3>
+                <p className="text-sm text-slate-700">Manage your interview pipeline</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:shadow-lg transition-all cursor-pointer">
+        <Card className="bg-gradient-to-br from-green-100 to-green-50/70 border-green-200 hover:shadow-lg transition-all cursor-pointer">
           <CardContent className="p-6">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center flex-shrink-0">
                 <BarChart3 className="h-6 w-6 text-white" />
               </div>
               <div className="min-w-0">
-                <h3 className="font-semibold text-slate-800 mb-1">View Analytics</h3>
-                <p className="text-sm text-slate-600">Track hiring performance metrics</p>
+                <h3 className="font-semibold text-green-900 mb-1">View Analytics</h3>
+                <p className="text-sm text-slate-700">Track hiring performance metrics</p>
               </div>
             </div>
           </CardContent>
@@ -155,3 +158,4 @@ export const Dashboard = () => {
     </div>
   );
 };
+
