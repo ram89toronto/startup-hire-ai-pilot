@@ -89,6 +89,10 @@ export default {
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out'
+			},
+			fontFamily: {
+				'primary': ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+				// Optionally, add: 'secondary': ['Playfair Display', 'serif'],
 			}
 		}
 	},

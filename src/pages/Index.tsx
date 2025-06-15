@@ -18,7 +18,7 @@ const Index = () => {
   const [activeView, setActiveView] = useState<"dashboard" | "prompt-generator" | "analytics" | "settings">("dashboard");
   
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen app-gradient-bg font-primary">
       <Header 
         isLoggedIn={isLoggedIn} 
         setIsLoggedIn={setIsLoggedIn}
