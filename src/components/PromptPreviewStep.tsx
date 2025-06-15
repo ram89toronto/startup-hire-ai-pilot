@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { PDFPreviewDialog } from "@/components/pdf/PDFPreviewDialog";
@@ -11,6 +10,7 @@ import { toast } from "sonner";
 import { useTokens } from "@/hooks/useTokens";
 import { useGoogleApis } from "@/hooks/useGoogleApis";
 import { FileText, MessageCircle, Settings, Search, Sparkles } from "lucide-react";
+import { PromptWizardSidebarLayout } from "./PromptWizardSidebarLayout";
 
 export function PromptPreviewStep({
   role,
@@ -195,37 +195,19 @@ Generated with AI assistance and real-time market data.`;
   };
 
   return (
-    <div className="space-y-6">
-      <div className="text-center space-y-4">
-        <h2 className="text-3xl font-bold text-slate-800">Preview & Generate</h2>
-        <p className="text-lg text-slate-600">
-          Review your interview guide, enhance with AI, and export professionally
-        </p>
-      </div>
-
-      <TokenDisplay />
-
-      <Tabs defaultValue="preview" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="preview" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            Preview
-          </TabsTrigger>
-          <TabsTrigger value="chat" className="flex items-center gap-2">
-            <MessageCircle className="h-4 w-4" />
-            AI Assistant
-          </TabsTrigger>
-          <TabsTrigger value="research" className="flex items-center gap-2">
-            <Search className="h-4 w-4" />
-            Research
-          </TabsTrigger>
-          <TabsTrigger value="settings" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            Settings
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="preview" className="space-y-4">
+    <PromptWizardSidebarLayout
+      chatContext={chatContext}
+      showPdf={showPdf}
+      setShowPdf={setShowPdf}
+      previewTab={
+        <div className="space-y-6 animate-fade-in">
+          <div className="text-center space-y-4">
+            <h2 className="text-3xl font-bold text-slate-800">Preview & Generate</h2>
+            <p className="text-lg text-slate-600">
+              Review your interview guide, enhance with AI, and export professionally
+            </p>
+          </div>
+          <TokenDisplay />
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -259,13 +241,10 @@ Generated with AI assistance and real-time market data.`;
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-
-        <TabsContent value="chat">
-          <EnhancedRagChat context={chatContext} />
-        </TabsContent>
-
-        <TabsContent value="research" className="space-y-4">
+        </div>
+      }
+      researchTab={
+        <div className="space-y-4 animate-fade-in">
           <Card>
             <CardHeader>
               <CardTitle>Market Research & Intelligence</CardTitle>
@@ -283,9 +262,10 @@ Generated with AI assistance and real-time market data.`;
               )}
             </CardContent>
           </Card>
-        </TabsContent>
-
-        <TabsContent value="settings" className="space-y-4">
+        </div>
+      }
+      settingsTab={
+        <div className="space-y-4 animate-fade-in">
           <Card>
             <CardHeader>
               <CardTitle>Advanced Settings</CardTitle>
@@ -329,15 +309,16 @@ Generated with AI assistance and real-time market data.`;
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
-
-      <PDFPreviewDialog
-        open={showPdf}
-        onOpenChange={setShowPdf}
-        content={enhancedContent || baseContent}
-        title={title}
-      />
-    </div>
+        </div>
+      }
+      pdfDialog={
+        <PDFPreviewDialog
+          open={showPdf}
+          onOpenChange={setShowPdf}
+          content={enhancedContent || baseContent}
+          title={title}
+        />
+      }
+    />
   );
 }
