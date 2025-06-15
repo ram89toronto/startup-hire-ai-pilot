@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Bot, User, Sparkles, Clock, Lightbulb, Paperclip } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Clock, Lightbulb, Paperclip, Bolt } from 'lucide-react';
 import { useTokens } from '@/hooks/useTokens';
 import { toast } from 'sonner';
 import { ChatMessageBubble } from "./ChatMessageBubble";
@@ -16,6 +16,7 @@ interface ChatMessage {
   content: string;
   timestamp: Date;
   suggestions?: string[];
+  isStreaming?: boolean;
 }
 
 interface EnhancedRagChatProps {
@@ -44,13 +45,18 @@ export const EnhancedRagChat = ({ context }: EnhancedRagChatProps) => {
   ]);
   
   const [input, setInput] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
   const { consumeTokens, getRemainingTokens } = useTokens();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  const handleStreamComplete = (messageId: string) => {
+    setMessages(prev => prev.map(msg => 
+      msg.id === messageId ? { ...msg, isStreaming: false } : msg
+    ));
+  };
 
   const generateResponse = async (userMessage: string): Promise<string> => {
     // Enhanced AI responses based on context
@@ -186,7 +192,6 @@ Would you like me to elaborate on any specific aspect?`
 
     setMessages(prev => [...prev, userMessage]);
     setInput('');
-    setIsTyping(true);
 
     // Consume token
     await consumeTokens(1);
@@ -200,10 +205,10 @@ Would you like me to elaborate on any specific aspect?`
         type: 'assistant',
         content: response,
         timestamp: new Date(),
+        isStreaming: true,
       };
 
       setMessages(prev => [...prev, assistantMessage]);
-      setIsTyping(false);
     }, 1500);
   };
 
@@ -231,32 +236,34 @@ Would you like me to elaborate on any specific aspect?`
 
       {/* Chat Feed */}
       <div className="flex-1 overflow-y-auto flex flex-col gap-1 px-2 sm:px-6 pt-4 pb-1 transition-all" role="log" aria-live="polite">
-        {messages.map((message, idx) => (
-          <ChatMessageBubble
-            key={message.id}
-            type={message.type === "assistant" ? "assistant" : "user"}
-            content={message.content}
-            timestamp={message.timestamp}
-            animate
-          />
-        ))}
-
-        {isTyping && (
-          <div className="flex items-end gap-2">
-            <Avatar className="w-8 h-8">
-              <AvatarFallback>
-                <Bot className="w-4 h-4 text-purple-500" />
-              </AvatarFallback>
-            </Avatar>
-            <div className="bg-purple-600 text-white rounded-bl-xl rounded-t-xl rounded-br-md px-4 py-2 shadow animate-fade-in">
-              <div className="flex gap-1">
-                <div className="w-2 h-2 bg-white/80 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-white/80 rounded-full animate-bounce" style={{ animationDelay: ".15s" }}></div>
-                <div className="w-2 h-2 bg-white/80 rounded-full animate-bounce" style={{ animationDelay: ".3s" }}></div>
+        {messages.map((message) => (
+          <React.Fragment key={message.id}>
+            <ChatMessageBubble
+              type={message.type}
+              content={message.content}
+              timestamp={message.timestamp}
+              animate
+              isStreaming={message.isStreaming}
+              onStreamComplete={() => handleStreamComplete(message.id)}
+            />
+            {message.suggestions && (
+              <div className="flex flex-wrap items-center justify-start gap-2 px-12 py-2 animate-fade-in">
+                {message.suggestions.map((suggestion, i) => (
+                  <Button
+                    key={i}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleSuggestionClick(suggestion)}
+                    className="flex items-center gap-2 rounded-full hover:bg-slate-200/70 border-slate-200 text-slate-600 transition-all text-xs"
+                  >
+                    <Bolt className="h-3 w-3 text-purple-500" />
+                    {suggestion}
+                  </Button>
+                ))}
               </div>
-            </div>
-          </div>
-        )}
+            )}
+          </React.Fragment>
+        ))}
         <div aria-hidden="true" style={{ height: 1 }} ref={scrollRef} />
       </div>
 
@@ -282,7 +289,7 @@ Would you like me to elaborate on any specific aspect?`
           value={input}
           onChange={e => setInput(e.target.value)}
           placeholder="Type your message..."
-          disabled={isTyping || getRemainingTokens() === 0}
+          disabled={getRemainingTokens() === 0}
           className="flex-1 border-slate-200 focus:border-purple-400 text-[1rem] bg-slate-50"
           aria-label="Chat message input"
           onKeyDown={e => {
@@ -295,7 +302,7 @@ Would you like me to elaborate on any specific aspect?`
         {/* Send button */}
         <Button
           type="submit"
-          disabled={!input.trim() || isTyping || getRemainingTokens() === 0}
+          disabled={!input.trim() || getRemainingTokens() === 0}
           className="bg-purple-600 hover:bg-purple-700 rounded-full px-3 py-2 flex items-center justify-center focus-visible:ring-2 focus:ring-purple-300"
           aria-label="Send message"
         >

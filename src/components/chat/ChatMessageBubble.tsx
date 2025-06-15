@@ -3,12 +3,15 @@ import React from "react";
 import { User, Bot, MoreVertical } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import clsx from "clsx";
+import { useTypewriter } from "@/hooks/useTypewriter";
 
 interface ChatMessageBubbleProps {
   type: "user" | "assistant" | "system";
   content: string;
   timestamp: Date;
   animate?: boolean;
+  isStreaming?: boolean;
+  onStreamComplete?: () => void;
 }
 
 export function ChatMessageBubble({
@@ -16,7 +19,18 @@ export function ChatMessageBubble({
   content,
   timestamp,
   animate = true,
+  isStreaming = false,
+  onStreamComplete = () => {},
 }: ChatMessageBubbleProps) {
+  const displayedContent =
+    type === "assistant" && isStreaming
+      ? useTypewriter(content, 20, onStreamComplete)
+      : content;
+  const showCursor =
+    type === "assistant" &&
+    isStreaming &&
+    displayedContent.length < content.length;
+
   const alignment =
     type === "user"
       ? "justify-end text-right"
@@ -76,7 +90,12 @@ export function ChatMessageBubble({
               <MoreVertical className="h-4 w-4" />
             </button>
           )}
-          <span className="break-words whitespace-pre-wrap leading-relaxed block">{content}</span>
+          <span className="break-words whitespace-pre-wrap leading-relaxed block">
+            {displayedContent}
+            {showCursor && (
+              <span className="inline-block w-0.5 h-4 bg-white/70 animate-pulse ml-1 translate-y-0.5" />
+            )}
+          </span>
         </div>
         <span className="text-xs text-slate-400 mt-1 ml-2 mr-2" aria-label="Timestamp">
           {timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
