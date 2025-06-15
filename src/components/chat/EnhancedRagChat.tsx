@@ -1,13 +1,13 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Bot, User, Sparkles, Clock, Lightbulb } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Clock, Lightbulb, Paperclip } from 'lucide-react';
 import { useTokens } from '@/hooks/useTokens';
 import { toast } from 'sonner';
+import { ChatMessageBubble } from "./ChatMessageBubble";
 
 interface ChatMessage {
   id: string;
@@ -211,115 +211,103 @@ Would you like me to elaborate on any specific aspect?`
   };
 
   return (
-    <Card className="h-full flex flex-col bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200 w-full">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-purple-700">
-          <Sparkles className="h-5 w-5" />
-          AI Interview Assistant
-          <Badge variant="secondary" className="ml-auto">
-            {getRemainingTokens()} tokens
-          </Badge>
-        </CardTitle>
-      </CardHeader>
-
-      <CardContent className="flex-1 flex flex-col p-0">
-        <ScrollArea className="flex-1 px-4">
-          <div className="space-y-4 pb-4">
-            {messages.map((message) => (
-              <div key={message.id} className="space-y-2">
-                <div className={`flex items-start gap-3 ${
-                  message.type === 'user' ? 'justify-end' : 'justify-start'
-                }`}>
-                  {message.type !== 'user' && (
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
-                      {message.type === 'system' ? (
-                        <Sparkles className="h-4 w-4 text-purple-600" />
-                      ) : (
-                        <Bot className="h-4 w-4 text-purple-600" />
-                      )}
-                    </div>
-                  )}
-                  
-                  <div className={`max-w-[80%] rounded-xl px-4 py-3 ${
-                    message.type === 'user' 
-                      ? 'bg-blue-600 text-white ml-auto' 
-                      : 'bg-white border border-purple-200 text-slate-700'
-                  }`}>
-                    <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                      {message.content}
-                    </div>
-                    <div className="flex items-center gap-1 mt-2 text-xs opacity-70">
-                      <Clock className="h-3 w-3" />
-                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </div>
-                  </div>
-
-                  {message.type === 'user' && (
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                      <User className="h-4 w-4 text-blue-600" />
-                    </div>
-                  )}
-                </div>
-
-                {message.suggestions && (
-                  <div className="flex flex-wrap gap-2 ml-11">
-                    {message.suggestions.map((suggestion, idx) => (
-                      <Button
-                        key={idx}
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleSuggestionClick(suggestion)}
-                        className="text-xs border-purple-200 hover:bg-purple-50"
-                      >
-                        <Lightbulb className="h-3 w-3 mr-1" />
-                        {suggestion}
-                      </Button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-
-            {isTyping && (
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
-                  <Bot className="h-4 w-4 text-purple-600" />
-                </div>
-                <div className="bg-white border border-purple-200 rounded-xl px-4 py-3">
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                  </div>
-                </div>
-              </div>
-            )}
-            <div ref={scrollRef} />
-          </div>
-        </ScrollArea>
-
-        <div className="p-4 border-t border-purple-200 bg-white/50">
-          <div className="flex gap-2">
-            <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask about evaluation criteria, scoring, red flags..."
-              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              className="border-purple-200 focus:border-purple-400"
-            />
-            <Button 
-              onClick={handleSend} 
-              disabled={!input.trim() || isTyping || getRemainingTokens() === 0}
-              className="bg-purple-600 hover:bg-purple-700"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
-          {getRemainingTokens() === 0 && (
-            <p className="text-xs text-red-600 mt-2">No tokens remaining. Upgrade for unlimited chat!</p>
-          )}
+    <section
+      className="flex flex-col h-full w-full bg-white md:rounded-lg shadow-lg border border-slate-100/70 max-w-full"
+      aria-label="Chat panel"
+    >
+      {/* Header */}
+      <header className="flex items-center justify-between gap-2 px-4 sm:px-6 py-3 border-b bg-gradient-to-r from-purple-50 to-blue-50 sticky top-0 z-10">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-6 w-6 text-purple-600" aria-hidden="true" />
+          <span className="font-semibold text-lg text-purple-700">
+            Interview Assistant
+          </span>
         </div>
-      </CardContent>
-    </Card>
+        <Badge variant="secondary" className="text-xs">
+          {getRemainingTokens()} tokens
+        </Badge>
+      </header>
+
+      {/* Chat Feed */}
+      <div className="flex-1 overflow-y-auto flex flex-col gap-1 px-2 sm:px-6 pt-4 pb-1 transition-all" role="log" aria-live="polite">
+        {messages.map((message, idx) => (
+          <ChatMessageBubble
+            key={message.id}
+            type={message.type === "assistant" ? "assistant" : "user"}
+            content={message.content}
+            timestamp={message.timestamp}
+            animate
+          />
+        ))}
+
+        {isTyping && (
+          <div className="flex items-end gap-2">
+            <Avatar className="w-8 h-8">
+              <AvatarFallback>
+                <Bot className="w-4 h-4 text-purple-500" />
+              </AvatarFallback>
+            </Avatar>
+            <div className="bg-purple-600 text-white rounded-bl-xl rounded-t-xl rounded-br-md px-4 py-2 shadow animate-fade-in">
+              <div className="flex gap-1">
+                <div className="w-2 h-2 bg-white/80 rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-white/80 rounded-full animate-bounce" style={{ animationDelay: ".15s" }}></div>
+                <div className="w-2 h-2 bg-white/80 rounded-full animate-bounce" style={{ animationDelay: ".3s" }}></div>
+              </div>
+            </div>
+          </div>
+        )}
+        <div aria-hidden="true" style={{ height: 1 }} ref={scrollRef} />
+      </div>
+
+      {/* Input Bar */}
+      <form
+        className="border-t sticky bottom-0 bg-white/95 px-3 sm:px-6 py-2 flex gap-2 items-end z-10"
+        onSubmit={e => {
+          e.preventDefault();
+          handleSend();
+        }}
+        aria-label="Send message"
+      >
+        {/* Attachment */}
+        <button
+          type="button"
+          className="p-2 rounded-full hover:bg-slate-100 focus-visible:ring-2 focus:ring-purple-300 transition-colors"
+          aria-label="Attach file"
+        >
+          <Paperclip className="h-5 w-5 text-slate-400" />
+        </button>
+        {/* Text input */}
+        <Input
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          placeholder="Type your message..."
+          disabled={isTyping || getRemainingTokens() === 0}
+          className="flex-1 border-slate-200 focus:border-purple-400 text-[1rem] bg-slate-50"
+          aria-label="Chat message input"
+          onKeyDown={e => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              handleSend();
+            }
+          }}
+        />
+        {/* Send button */}
+        <Button
+          type="submit"
+          disabled={!input.trim() || isTyping || getRemainingTokens() === 0}
+          className="bg-purple-600 hover:bg-purple-700 rounded-full px-3 py-2 flex items-center justify-center focus-visible:ring-2 focus:ring-purple-300"
+          aria-label="Send message"
+        >
+          <Send className="h-5 w-5" />
+        </Button>
+      </form>
+
+      {/* Token error */}
+      {getRemainingTokens() === 0 && (
+        <div className="p-2 text-xs text-red-600 text-center bg-red-50 border-t border-red-200">
+          No tokens remaining. Upgrade for unlimited chat!
+        </div>
+      )}
+    </section>
   );
 };
