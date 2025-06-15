@@ -1,9 +1,8 @@
 
 import React from "react";
 import { User, Bot, MoreVertical } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import clsx from "clsx";
-import { useTypewriter } from "@/hooks/useTypewriter";
 
 interface ChatMessageBubbleProps {
   type: "user" | "assistant" | "system";
@@ -11,7 +10,6 @@ interface ChatMessageBubbleProps {
   timestamp: Date;
   animate?: boolean;
   isStreaming?: boolean;
-  onStreamComplete?: () => void;
 }
 
 export function ChatMessageBubble({
@@ -20,16 +18,9 @@ export function ChatMessageBubble({
   timestamp,
   animate = true,
   isStreaming = false,
-  onStreamComplete = () => {},
 }: ChatMessageBubbleProps) {
-  const displayedContent =
-    type === "assistant" && isStreaming
-      ? useTypewriter(content, 20, onStreamComplete)
-      : content;
-  const showCursor =
-    type === "assistant" &&
-    isStreaming &&
-    displayedContent.length < content.length;
+  const displayedContent = content;
+  const showCursor = type === "assistant" && isStreaming && !content.endsWith("...");
 
   const alignment =
     type === "user"

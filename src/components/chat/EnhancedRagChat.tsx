@@ -1,14 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Bot, User, Sparkles, Clock, Lightbulb, Paperclip, Bolt } from 'lucide-react';
+import { Send, Sparkles, Paperclip, Bolt } from 'lucide-react';
 import { useTokens } from '@/hooks/useTokens';
 import { toast } from 'sonner';
 import { ChatMessageBubble } from "./ChatMessageBubble";
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 interface ChatMessage {
   id: string;
@@ -33,7 +31,7 @@ export const EnhancedRagChat = ({ context }: EnhancedRagChatProps) => {
     {
       id: '1',
       type: 'system',
-      content: '👋 I\'m your AI interview assistant! Ask me anything about evaluation criteria, scoring methods, or how to improve your interview process.',
+      content: "👋 I'm your AI interview assistant, powered by Gemini! Ask me anything about evaluation criteria, scoring methods, or how to improve your interview process.",
       timestamp: new Date(),
       suggestions: [
         'How should I score this scenario?',
@@ -45,137 +43,34 @@ export const EnhancedRagChat = ({ context }: EnhancedRagChatProps) => {
   ]);
   
   const [input, setInput] = useState('');
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem('gemini-api-key') || '');
+  const [isApiKeySet, setIsApiKeySet] = useState(() => !!localStorage.getItem('gemini-api-key'));
+  const [tempApiKey, setTempApiKey] = useState('');
+
   const { consumeTokens, getRemainingTokens } = useTokens();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-
-  const handleStreamComplete = (messageId: string) => {
-    setMessages(prev => prev.map(msg => 
-      msg.id === messageId ? { ...msg, isStreaming: false } : msg
-    ));
-  };
-
-  const generateResponse = async (userMessage: string): Promise<string> => {
-    // Enhanced AI responses based on context
-    const responses = {
-      score: `For scoring this ${context.role} scenario, I recommend using a 1-5 scale across these dimensions:
-
-**Technical Competency** (1-5)
-- Problem-solving approach
-- Technical accuracy
-- Best practices awareness
-
-**Communication** (1-5)  
-- Clarity of explanation
-- Asking clarifying questions
-- Stakeholder consideration
-
-**Cultural Fit** (1-5)
-- Alignment with company values
-- Collaboration approach
-- Growth mindset
-
-**Scenario-Specific** (1-5)
-- Handling of ${context.scenario.slice(0, 50)}...
-- Practical application
-- Risk assessment
-
-*Total Score: ___/20*`,
-      
-      'red flags': `Key red flags to watch for during this ${context.role} interview:
-
-🚩 **Technical Red Flags:**
-- Overly confident without substance
-- Blaming previous teams/companies
-- Unable to explain trade-offs
-
-🚩 **Communication Red Flags:**
-- Not asking clarifying questions
-- Dismissive of feedback
-- Poor listening skills
-
-🚩 **Cultural Red Flags:**
-- Negative attitude toward collaboration
-- Inflexibility in approach
-- Lack of curiosity about the company
-
-🚩 **Role-Specific Red Flags:**
-- For ${context.roleTitle}: Missing key competencies expected at this level
-- Unrealistic expectations about timeline/scope`,
-
-      'follow-up': `Great follow-up questions for this scenario:
-
-**Probing Deeper:**
-• "Walk me through your thought process when you made that decision"
-• "What would you do differently if you had 50% more time?"
-• "How would you communicate this to non-technical stakeholders?"
-
-**Exploring Edge Cases:**
-• "What if the initial assumption was wrong?"
-• "How would you handle pushback on this approach?"
-• "What metrics would you use to measure success?"
-
-**Cultural Assessment:**
-• "Tell me about a time you disagreed with a team decision"
-• "How do you stay updated in your field?"
-• "What questions do you have about our team/culture?"`,
-
-      bias: `Here's how to reduce bias in this interview:
-
-**Structured Approach:**
-✓ Use the same scenario for all candidates
-✓ Score each dimension independently
-✓ Take notes during, not after the interview
-
-**Bias Mitigation:**
-✓ Focus on behavior, not personality
-✓ Ask for specific examples, not generalizations  
-✓ Have multiple interviewers when possible
-
-**Inclusive Practices:**
-✓ Avoid culture-fit for culture-add
-✓ Don't penalize different communication styles
-✓ Consider different backgrounds as strengths
-
-**Documentation:**
-✓ Record specific examples of good/poor answers
-✓ Note the reasoning behind scores
-✓ Review patterns across candidates`,
-
-      default: `I can help you with this ${context.role} interview! Here are some insights:
-
-**About the Role:** ${context.roleTitle} at ${context.companyContext}
-
-**Key Focus Areas:**
-- Technical skills evaluation
-- Problem-solving approach
-- Team collaboration
-- Cultural alignment
-
-**Scenario Analysis:**
-Your scenario tests real-world application of skills, which is excellent for predicting job performance.
-
-Would you like me to elaborate on any specific aspect?`
-    };
-
-    if (userMessage.toLowerCase().includes('score') || userMessage.toLowerCase().includes('evaluate')) {
-      return responses.score;
-    } else if (userMessage.toLowerCase().includes('red flag') || userMessage.toLowerCase().includes('warning')) {
-      return responses['red flags'];
-    } else if (userMessage.toLowerCase().includes('follow-up') || userMessage.toLowerCase().includes('question')) {
-      return responses['follow-up'];
-    } else if (userMessage.toLowerCase().includes('bias') || userMessage.toLowerCase().includes('fair')) {
-      return responses.bias;
+  
+  useEffect(() => {
+    if (apiKey) {
+      localStorage.setItem('gemini-api-key', apiKey);
+      setIsApiKeySet(true);
     } else {
-      return responses.default;
+      localStorage.removeItem('gemini-api-key');
+      setIsApiKeySet(false);
     }
-  };
+  }, [apiKey]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
+
+    if (!apiKey) {
+      toast.error("Please set your Gemini API key to chat.");
+      return;
+    }
 
     const remainingTokens = getRemainingTokens();
     if (remainingTokens === 0) {
@@ -189,32 +84,93 @@ Would you like me to elaborate on any specific aspect?`
       content: input,
       timestamp: new Date(),
     };
-
+    
+    const currentInput = input;
     setMessages(prev => [...prev, userMessage]);
     setInput('');
-
-    // Consume token
     await consumeTokens(1);
 
-    // Simulate typing delay
-    setTimeout(async () => {
-      const response = await generateResponse(input);
+    try {
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const systemInstruction = `You are an expert AI interview assistant for the role of ${context.roleTitle} at ${context.companyContext}. The current interview scenario is: ${context.scenario}. Be helpful, concise, and provide guidance on evaluating candidates.`;
+      const model = genAI.getGenerativeModel({ model: "gemini-pro", systemInstruction });
       
+      const chatHistory = messages
+        .filter(m => m.type === 'user' || m.type === 'assistant')
+        .map(m => ({ role: m.type, parts: [{ text: m.content }] }));
+
+      const result = await model.generateContentStream(currentInput);
+
+      const assistantMessageId = (Date.now() + 1).toString();
       const assistantMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
+        id: assistantMessageId,
         type: 'assistant',
-        content: response,
+        content: '',
         timestamp: new Date(),
         isStreaming: true,
       };
-
       setMessages(prev => [...prev, assistantMessage]);
-    }, 1500);
+
+      let text = '';
+      for await (const chunk of result.stream) {
+        const chunkText = chunk.text();
+        text += chunkText;
+        setMessages(prev =>
+            prev.map(msg =>
+                msg.id === assistantMessageId ? { ...msg, content: text } : msg
+            )
+        );
+      }
+
+      setMessages(prev =>
+        prev.map(msg =>
+            msg.id === assistantMessageId ? { ...msg, isStreaming: false } : msg
+        )
+      );
+    } catch (error) {
+      console.error("Error with Gemini API:", error);
+      toast.error("An error occurred with the AI. Check your API key and console.");
+      const errorMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        type: 'system',
+        content: "Sorry, I couldn't get a response. Please check your API key, network connection, and the developer console for errors.",
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    }
   };
 
   const handleSuggestionClick = (suggestion: string) => {
     setInput(suggestion);
+    setTimeout(() => handleSend(), 100);
   };
+
+  if (!isApiKeySet) {
+    return (
+      <div className="flex flex-col h-full w-full bg-white md:rounded-lg shadow-lg border border-slate-100/70 p-6 items-center justify-center">
+        <div className="max-w-sm text-center">
+          <Sparkles className="h-12 w-12 text-purple-500 mx-auto mb-4" />
+          <h3 className="text-xl font-bold mb-2 text-slate-800">Gemini API Key Required</h3>
+          <p className="text-sm text-slate-600 mb-4">
+            Please provide your Google Gemini API key to activate the AI assistant.
+          </p>
+          <div className="flex gap-2">
+            <Input
+              type="password"
+              placeholder="Paste your API Key here"
+              value={tempApiKey}
+              onChange={(e) => setTempApiKey(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') { if (tempApiKey.trim()) { setApiKey(tempApiKey.trim()); }}}}
+            />
+            <Button onClick={() => { if (tempApiKey.trim()) { setApiKey(tempApiKey.trim()); }}}>Save</Button>
+          </div>
+          <p className="text-xs text-slate-500 mt-4">
+            You can get one from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-purple-600 underline font-medium">Google AI Studio</a>. Your key is stored securely in your browser's local storage.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <section
@@ -242,9 +198,7 @@ Would you like me to elaborate on any specific aspect?`
               type={message.type}
               content={message.content}
               timestamp={message.timestamp}
-              animate
               isStreaming={message.isStreaming}
-              onStreamComplete={() => handleStreamComplete(message.id)}
             />
             {message.suggestions && (
               <div className="flex flex-wrap items-center justify-start gap-2 px-12 py-2 animate-fade-in">
@@ -289,7 +243,7 @@ Would you like me to elaborate on any specific aspect?`
           value={input}
           onChange={e => setInput(e.target.value)}
           placeholder="Type your message..."
-          disabled={getRemainingTokens() === 0}
+          disabled={getRemainingTokens() === 0 || !isApiKeySet}
           className="flex-1 border-slate-200 focus:border-purple-400 text-[1rem] bg-slate-50"
           aria-label="Chat message input"
           onKeyDown={e => {
@@ -302,7 +256,7 @@ Would you like me to elaborate on any specific aspect?`
         {/* Send button */}
         <Button
           type="submit"
-          disabled={!input.trim() || getRemainingTokens() === 0}
+          disabled={!input.trim() || getRemainingTokens() === 0 || !isApiKeySet}
           className="bg-purple-600 hover:bg-purple-700 rounded-full px-3 py-2 flex items-center justify-center focus-visible:ring-2 focus:ring-purple-300"
           aria-label="Send message"
         >
