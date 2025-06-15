@@ -12,6 +12,7 @@ import { PricingSection } from "@/components/PricingSection";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, CheckCircle, Play, Star, Zap, Users, TrendingUp, Clock, Shield, Target, Rocket, Award, Building } from "lucide-react";
+import { GeminiApiKeySetting } from "@/components/settings/GeminiApiKeySetting";
 
 const Index = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -252,9 +253,13 @@ const Index = () => {
             )}
 
             {activeView === "settings" && (
-              <div className="text-center py-20">
-                <h2 className="text-3xl font-bold text-slate-800">Settings</h2>
-                <p className="text-slate-500 mt-2">This feature is coming soon!</p>
+              <div className="flex flex-col items-center justify-center py-20">
+                <h2 className="text-3xl font-bold text-slate-800 mb-4">Settings</h2>
+                <p className="text-slate-500 mb-6">Manage your account and integrations</p>
+                <div className="w-full max-w-2xl space-y-8">
+                  {/* Gemini API Key setting */}
+                  <GeminiApiKeySetting />
+                </div>
               </div>
             )}
           </div>
