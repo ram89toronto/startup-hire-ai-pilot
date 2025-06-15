@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,16 +70,8 @@ export const AuthSection = ({ isLoggedIn, setIsLoggedIn }: AuthSectionProps) => 
     }
 
     if (data.user) {
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .insert([{ id: data.user.id, full_name: signupData.name, email: signupData.email }]);
-      
-      if (profileError) {
-        toast.error(`Sign-up successful, but failed to create profile: ${profileError.message}`);
-      } else {
-        toast.success("Account created! Please check your email to confirm.");
-        toast.info("For easier testing, you can disable email confirmation in your Supabase project's auth settings.");
-      }
+      toast.success("Account created! Please check your email to confirm.");
+      toast.info("For easier testing, you can disable email confirmation in your Supabase project's auth settings.");
     }
     setIsAuthOpen(false);
   };

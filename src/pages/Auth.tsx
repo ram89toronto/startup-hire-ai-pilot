@@ -13,6 +13,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -35,6 +36,9 @@ const Auth = () => {
       email,
       password,
       options: {
+        data: {
+          full_name: fullName,
+        },
         emailRedirectTo: `${window.location.origin}/`,
       },
     });
@@ -90,6 +94,13 @@ const Auth = () => {
             </TabsContent>
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4 pt-4">
+                <Input
+                  placeholder="Full Name"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                  className="py-6"
+                />
                 <Input
                   type="email"
                   placeholder="Email"
