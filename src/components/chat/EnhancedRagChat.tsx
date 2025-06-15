@@ -8,6 +8,7 @@ import { Send, Bot, User, Sparkles, Clock, Lightbulb, Paperclip } from 'lucide-r
 import { useTokens } from '@/hooks/useTokens';
 import { toast } from 'sonner';
 import { ChatMessageBubble } from "./ChatMessageBubble";
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 interface ChatMessage {
   id: string;
