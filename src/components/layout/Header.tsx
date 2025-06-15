@@ -24,11 +24,12 @@ export const Header = ({ activeView, setActiveView, isLoggedIn, setIsLoggedIn }:
 
   return (
     <header className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Consistent container: pure white background, matching px-4/sm:px-6/lg:px-8 as other containers */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <h1 className="text-xl font-bold text-blue-600 dark:text-blue-400">
+            <h1 className="text-xl font-bold text-primary"> {/* Use brand primary */}
               HireGuide AI
             </h1>
           </div>
@@ -74,7 +75,7 @@ export const Header = ({ activeView, setActiveView, isLoggedIn, setIsLoggedIn }:
 
         {/* Mobile Navigation */}
         {isLoggedIn && isMobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 dark:border-gray-700 py-3">
+          <div className="md:hidden border-t border-gray-200 dark:border-gray-700 py-3 bg-white dark:bg-gray-900">
             <nav className="space-y-1">
               {navItems.map((item) => {
                 const Icon = item.icon;
