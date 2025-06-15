@@ -211,7 +211,7 @@ Would you like me to elaborate on any specific aspect?`
   };
 
   return (
-    <Card className="h-[500px] flex flex-col bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200">
+    <Card className="h-full flex flex-col bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200 w-full">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-purple-700">
           <Sparkles className="h-5 w-5" />

@@ -2,26 +2,19 @@
 import React, { ReactNode, useState } from "react";
 import {
   FileText,
-  MessageCircle,
   Search,
   Settings
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EnhancedRagChat } from "@/components/chat/EnhancedRagChat";
-import { Card } from "@/components/ui/card";
 
-type Tab = "preview" | "chat" | "research" | "settings";
+type Tab = "preview" | "research" | "settings";
 
 const sidebarTabs = [
   {
     key: "preview",
     label: "Preview",
     icon: FileText,
-  },
-  {
-    key: "chat",
-    label: "AI Chat",
-    icon: MessageCircle,
   },
   {
     key: "research",
@@ -43,7 +36,7 @@ interface Props {
   researchTab: ReactNode;
   settingsTab: ReactNode;
   pdfDialog: ReactNode;
-  initialTab?: Tab;
+  initialTab?: "preview" | "chat" | "research" | "settings";
 }
 
 export function PromptWizardSidebarLayout({
@@ -56,9 +49,8 @@ export function PromptWizardSidebarLayout({
   pdfDialog,
   initialTab = "preview",
 }: Props) {
-  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab === "chat" ? "preview" : (initialTab as Tab));
 
-  // Sidebar uses vertical tabs
   return (
     <div className="flex flex-col lg:flex-row gap-0 w-full h-full min-h-[600px]">
       <aside className="flex-shrink-0 w-full lg:w-52 bg-white border-r border-blue-100 flex lg:flex-col flex-row">
@@ -83,24 +75,23 @@ export function PromptWizardSidebarLayout({
           );
         })}
       </aside>
-      <main className="flex-1 min-w-0 p-0 relative flex flex-col">
+      <main className="flex-1 min-w-0 relative flex flex-col lg:flex-row">
         {/* PDF preview modal, etc */}
         {pdfDialog}
 
         {/* Main tab panel */}
-        {activeTab === "preview" && previewTab}
-        {activeTab === "research" && researchTab}
-        {activeTab === "settings" && settingsTab}
-        {/* AI Chat gets its own persistent area */}
-        {activeTab === "chat" && (
-          <div className="w-full h-full flex flex-col">
-            <div className="flex-1 flex overflow-hidden">
-              <div className="max-w-2xl w-full mx-auto my-4 flex-1 flex flex-col">
-                <EnhancedRagChat context={chatContext} />
-              </div>
-            </div>
+        <div className="flex-1 min-w-0 overflow-y-auto">
+          {activeTab === "preview" && previewTab}
+          {activeTab === "research" && researchTab}
+          {activeTab === "settings" && settingsTab}
+        </div>
+
+        {/* AI Chat panel */}
+        <div className="w-full lg:w-[450px] flex-shrink-0 border-t lg:border-t-0 lg:border-l border-slate-200 flex flex-col">
+          <div className="flex-1 flex overflow-hidden p-4 bg-slate-50/50 h-full">
+            <EnhancedRagChat context={chatContext} />
           </div>
-        )}
+        </div>
       </main>
     </div>
   );
