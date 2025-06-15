@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { AuthSection } from "@/components/auth/AuthSection";
@@ -29,7 +28,7 @@ export const Header = ({ activeView, setActiveView, isLoggedIn, setIsLoggedIn }:
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <h1 className="text-xl font-bold text-primary"> {/* Use brand primary */}
+            <h1 className="text-2xl font-extrabold tracking-tight font-mono uppercase text-primary select-none">
               HireGuide AI
             </h1>
           </div>
