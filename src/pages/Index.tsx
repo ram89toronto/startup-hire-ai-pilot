@@ -221,11 +221,11 @@ const Index = () => {
           <Footer />
         </div>
       ) : (
-        <div className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-indigo-50">
+        <div className="min-h-screen bg-slate-50">
           <div
-            className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 
-                       rounded-xl shadow-xl border border-blue-100 
-                       bg-white/90 backdrop-blur-sm"
+            className="container mx-auto px-4 sm:px-6 lg:px-8 py-8
+                       rounded-2xl shadow-lg border border-slate-200
+                       bg-white"
           >
             {/* The Tab Navigation has been removed, as the Header now controls the view. */}
             
