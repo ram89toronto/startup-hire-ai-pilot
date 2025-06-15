@@ -169,6 +169,7 @@ export type Database = {
           created_at: string | null
           email: string | null
           full_name: string | null
+          gemini_api_key: string | null
           id: string
           subscription_tier: string | null
         }
@@ -178,6 +179,7 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           full_name?: string | null
+          gemini_api_key?: string | null
           id: string
           subscription_tier?: string | null
         }
@@ -187,6 +189,7 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           full_name?: string | null
+          gemini_api_key?: string | null
           id?: string
           subscription_tier?: string | null
         }
