@@ -52,23 +52,43 @@ const Auth = () => {
     setLoading(false);
   };
 
-  const handleBackToHome = () => {
-    console.log('Back to Home clicked');
-    // Force a complete page reload to bypass any routing issues
-    window.location.assign('/');
+  const handleBackToHome = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Back to Home clicked - navigating to home');
+    
+    try {
+      // Force a complete page reload to bypass any routing issues
+      window.location.assign('/');
+    } catch (error) {
+      console.error('Navigation error:', error);
+      // Fallback navigation
+      window.location.href = '/';
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center app-gradient-bg p-4">
-      {/* Back to Home Button */}
+    <div className="min-h-screen flex items-center justify-center app-gradient-bg p-4 relative">
+      {/* Back to Home Button with improved positioning and z-index */}
       <Button
         variant="ghost"
         onClick={handleBackToHome}
-        className="absolute top-4 left-4 text-white hover:bg-white/10"
+        className="fixed top-4 left-4 z-50 text-white hover:bg-white/20 border border-white/20 backdrop-blur-sm cursor-pointer transition-all duration-200 hover:scale-105"
+        style={{ position: 'fixed' }}
       >
         <ArrowLeft className="h-4 w-4 mr-2" />
         Back to Home
       </Button>
+
+      {/* Alternative text link as backup */}
+      <div className="fixed top-4 right-4 z-50">
+        <button
+          onClick={handleBackToHome}
+          className="text-white/80 hover:text-white underline text-sm cursor-pointer transition-colors"
+        >
+          ← Home
+        </button>
+      </div>
 
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="text-center">
