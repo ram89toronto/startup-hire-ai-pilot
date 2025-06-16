@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -53,74 +54,23 @@ const Auth = () => {
   };
 
   const handleBackToHome = () => {
-    console.log('=== BACK TO HOME CLICKED ===');
-    console.log('Current location:', window.location.href);
-    console.log('Attempting navigation...');
-    
-    // Method 1: Try React Router first
-    try {
-      console.log('Trying React Router navigate...');
-      navigate('/');
-      console.log('React Router navigate completed');
-      return;
-    } catch (error) {
-      console.error('React Router failed:', error);
-    }
-    
-    // Method 2: Try window.location.href
-    try {
-      console.log('Trying window.location.href...');
-      window.location.href = '/';
-      console.log('window.location.href completed');
-    } catch (error) {
-      console.error('window.location.href failed:', error);
-      
-      // Method 3: Last resort - reload page
-      console.log('Trying window.location.reload...');
-      window.location.reload();
-    }
-  };
-
-  const handleTextLinkHome = () => {
-    console.log('=== TEXT LINK HOME CLICKED ===');
-    window.location.replace('/');
+    console.log('Back to Home button clicked');
+    navigate('/');
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center app-gradient-bg p-4 relative">
-      {/* Main Back to Home Button */}
-      <div className="fixed top-4 left-4 z-[9999]">
+      {/* Back to Home Button */}
+      <div className="fixed top-4 left-4 z-50">
         <Button
           variant="ghost"
           onClick={handleBackToHome}
-          className="text-white hover:bg-white/20 border border-white/30 backdrop-blur-sm transition-all duration-200 hover:scale-105 pointer-events-auto"
+          className="text-white hover:bg-white/20 border border-white/30 backdrop-blur-sm transition-all duration-200"
           type="button"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Home
         </Button>
-      </div>
-
-      {/* Alternative text link */}
-      <div className="fixed top-4 right-4 z-[9999]">
-        <button
-          onClick={handleTextLinkHome}
-          className="text-white/80 hover:text-white underline text-sm transition-colors pointer-events-auto bg-black/20 px-2 py-1 rounded"
-          type="button"
-        >
-          ← Home
-        </button>
-      </div>
-
-      {/* Emergency navigation - visible link */}
-      <div className="fixed top-16 left-4 z-[9999]">
-        <a 
-          href="/" 
-          className="text-white/60 hover:text-white text-xs underline bg-black/20 px-2 py-1 rounded"
-          onClick={() => console.log('Emergency link clicked')}
-        >
-          Emergency Home Link
-        </a>
       </div>
 
       <Card className="w-full max-w-md shadow-2xl">
