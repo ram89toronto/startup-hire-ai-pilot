@@ -41,7 +41,7 @@ const Index = () => {
     );
   }
 
-  // Force show landing page if no session
+  // Always show landing page if no session - don't redirect to auth automatically
   console.log('Rendering with session:', session);
   return session ? <HomePage session={session} /> : <LandingPage />;
 };
