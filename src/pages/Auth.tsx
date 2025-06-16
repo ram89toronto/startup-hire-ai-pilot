@@ -54,8 +54,31 @@ const Auth = () => {
   };
 
   const handleBackToHome = () => {
-    console.log('Back to Home button clicked');
-    navigate('/');
+    console.log('=== Back to Home Debug ===');
+    console.log('Current pathname:', window.location.pathname);
+    console.log('Current href:', window.location.href);
+    console.log('Navigate function:', typeof navigate);
+    
+    try {
+      console.log('Attempting navigate("/")...');
+      navigate('/');
+      console.log('Navigate call completed');
+      
+      // Add a small delay to check if navigation worked
+      setTimeout(() => {
+        console.log('After navigation - pathname:', window.location.pathname);
+        if (window.location.pathname === '/auth') {
+          console.log('Navigation failed - still on auth page');
+          console.log('Trying window.location.href as fallback');
+          window.location.href = '/';
+        }
+      }, 100);
+      
+    } catch (error) {
+      console.error('Navigation error:', error);
+      console.log('Using window.location.href fallback');
+      window.location.href = '/';
+    }
   };
 
   return (
@@ -71,6 +94,17 @@ const Auth = () => {
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Home
         </Button>
+      </div>
+
+      {/* Emergency direct link for testing */}
+      <div className="fixed top-16 left-4 z-50">
+        <a 
+          href="/" 
+          className="text-white/60 hover:text-white text-xs underline bg-black/20 px-2 py-1 rounded"
+          onClick={() => console.log('Direct link clicked')}
+        >
+          Direct Home Link
+        </a>
       </div>
 
       <Card className="w-full max-w-md shadow-2xl">
