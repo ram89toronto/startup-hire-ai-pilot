@@ -52,42 +52,75 @@ const Auth = () => {
     setLoading(false);
   };
 
-  const handleBackToHome = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log('Back to Home clicked - navigating to home');
+  const handleBackToHome = () => {
+    console.log('=== BACK TO HOME CLICKED ===');
+    console.log('Current location:', window.location.href);
+    console.log('Attempting navigation...');
     
+    // Method 1: Try React Router first
     try {
-      // Force a complete page reload to bypass any routing issues
-      window.location.assign('/');
+      console.log('Trying React Router navigate...');
+      navigate('/');
+      console.log('React Router navigate completed');
+      return;
     } catch (error) {
-      console.error('Navigation error:', error);
-      // Fallback navigation
-      window.location.href = '/';
+      console.error('React Router failed:', error);
     }
+    
+    // Method 2: Try window.location.href
+    try {
+      console.log('Trying window.location.href...');
+      window.location.href = '/';
+      console.log('window.location.href completed');
+    } catch (error) {
+      console.error('window.location.href failed:', error);
+      
+      // Method 3: Last resort - reload page
+      console.log('Trying window.location.reload...');
+      window.location.reload();
+    }
+  };
+
+  const handleTextLinkHome = () => {
+    console.log('=== TEXT LINK HOME CLICKED ===');
+    window.location.replace('/');
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center app-gradient-bg p-4 relative">
-      {/* Back to Home Button with improved positioning and z-index */}
-      <Button
-        variant="ghost"
-        onClick={handleBackToHome}
-        className="fixed top-4 left-4 z-50 text-white hover:bg-white/20 border border-white/20 backdrop-blur-sm cursor-pointer transition-all duration-200 hover:scale-105"
-        style={{ position: 'fixed' }}
-      >
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Back to Home
-      </Button>
-
-      {/* Alternative text link as backup */}
-      <div className="fixed top-4 right-4 z-50">
-        <button
+      {/* Main Back to Home Button */}
+      <div className="fixed top-4 left-4 z-[9999]">
+        <Button
+          variant="ghost"
           onClick={handleBackToHome}
-          className="text-white/80 hover:text-white underline text-sm cursor-pointer transition-colors"
+          className="text-white hover:bg-white/20 border border-white/30 backdrop-blur-sm transition-all duration-200 hover:scale-105 pointer-events-auto"
+          type="button"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Home
+        </Button>
+      </div>
+
+      {/* Alternative text link */}
+      <div className="fixed top-4 right-4 z-[9999]">
+        <button
+          onClick={handleTextLinkHome}
+          className="text-white/80 hover:text-white underline text-sm transition-colors pointer-events-auto bg-black/20 px-2 py-1 rounded"
+          type="button"
         >
           ← Home
         </button>
+      </div>
+
+      {/* Emergency navigation - visible link */}
+      <div className="fixed top-16 left-4 z-[9999]">
+        <a 
+          href="/" 
+          className="text-white/60 hover:text-white text-xs underline bg-black/20 px-2 py-1 rounded"
+          onClick={() => console.log('Emergency link clicked')}
+        >
+          Emergency Home Link
+        </a>
       </div>
 
       <Card className="w-full max-w-md shadow-2xl">
