@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -55,8 +54,8 @@ const Auth = () => {
 
   const handleBackToHome = () => {
     console.log('Back to Home clicked');
-    // Use React Router navigate instead of window.location for better UX
-    navigate('/', { replace: true });
+    // Force a complete page reload to bypass any routing issues
+    window.location.assign('/');
   };
 
   return (
