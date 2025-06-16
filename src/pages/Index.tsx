@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import LandingPage from "./LandingPage";
-import HomePage from "./HomePage";
 
 const Index = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -68,8 +67,9 @@ const Index = () => {
     );
   }
 
+  // Always show landing page - pass session so it can handle authenticated users
   console.log('Rendering Index with session:', session?.user?.email || 'No session');
-  return session ? <HomePage session={session} /> : <LandingPage />;
+  return <LandingPage session={session} />;
 };
 
 export default Index;
