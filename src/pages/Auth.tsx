@@ -52,12 +52,18 @@ const Auth = () => {
     setLoading(false);
   };
 
+  const handleBackToHome = () => {
+    console.log('Back to Home clicked');
+    // Force navigate to home and reload to ensure clean state
+    window.location.href = '/';
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center app-gradient-bg p-4">
       {/* Back to Home Button */}
       <Button
         variant="ghost"
-        onClick={() => navigate('/')}
+        onClick={handleBackToHome}
         className="absolute top-4 left-4 text-white hover:bg-white/10"
       >
         <ArrowLeft className="h-4 w-4 mr-2" />
