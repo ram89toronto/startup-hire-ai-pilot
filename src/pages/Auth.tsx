@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -94,17 +93,6 @@ const Auth = () => {
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Home
         </Button>
-      </div>
-
-      {/* Emergency direct link for testing */}
-      <div className="fixed top-16 left-4 z-50">
-        <a 
-          href="/" 
-          className="text-white/60 hover:text-white text-xs underline bg-black/20 px-2 py-1 rounded"
-          onClick={() => console.log('Direct link clicked')}
-        >
-          Direct Home Link
-        </a>
       </div>
 
       <Card className="w-full max-w-md shadow-2xl">
