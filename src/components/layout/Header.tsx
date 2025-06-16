@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { AuthSection } from "@/components/auth/AuthSection";
@@ -21,16 +22,25 @@ export const Header = ({ activeView, setActiveView, isLoggedIn, setIsLoggedIn }:
     { id: "settings", label: "Settings", icon: Settings },
   ] as const;
 
+  const handleLogoClick = () => {
+    console.log('Logo clicked, redirecting to home');
+    // Simply reload the page to go to home
+    window.location.href = '/';
+  };
+
   return (
     <header className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 sticky top-0 z-50">
       {/* Consistent container: pure white background, matching px-4/sm:px-6/lg:px-8 as other containers */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
+          {/* Logo - make it clickable */}
           <div className="flex items-center">
-            <h1 className="text-2xl font-extrabold tracking-tight font-mono uppercase text-primary select-none">
+            <button 
+              onClick={handleLogoClick}
+              className="text-2xl font-extrabold tracking-tight font-mono uppercase text-primary select-none hover:opacity-80 transition-opacity"
+            >
               HireGuide AI
-            </h1>
+            </button>
           </div>
 
           {/* Desktop Navigation */}

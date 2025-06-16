@@ -11,14 +11,22 @@ const Index = () => {
 
   useEffect(() => {
     const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      setLoading(false);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log('Current session:', session);
+        setSession(session);
+      } catch (error) {
+        console.error('Error getting session:', error);
+        setSession(null);
+      } finally {
+        setLoading(false);
+      }
     };
 
     getSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log('Auth state changed:', _event, session);
       setSession(session);
     });
 
@@ -33,6 +41,8 @@ const Index = () => {
     );
   }
 
+  // Force show landing page if no session
+  console.log('Rendering with session:', session);
   return session ? <HomePage session={session} /> : <LandingPage />;
 };
 
