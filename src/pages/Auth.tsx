@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -53,31 +54,7 @@ const Auth = () => {
   };
 
   const handleBackToHome = () => {
-    console.log('=== Back to Home Debug ===');
-    console.log('Current pathname:', window.location.pathname);
-    console.log('Current href:', window.location.href);
-    console.log('Navigate function:', typeof navigate);
-    
-    try {
-      console.log('Attempting navigate("/")...');
-      navigate('/');
-      console.log('Navigate call completed');
-      
-      // Add a small delay to check if navigation worked
-      setTimeout(() => {
-        console.log('After navigation - pathname:', window.location.pathname);
-        if (window.location.pathname === '/auth') {
-          console.log('Navigation failed - still on auth page');
-          console.log('Trying window.location.href as fallback');
-          window.location.href = '/';
-        }
-      }, 100);
-      
-    } catch (error) {
-      console.error('Navigation error:', error);
-      console.log('Using window.location.href fallback');
-      window.location.href = '/';
-    }
+    window.location.href = '/';
   };
 
   return (
