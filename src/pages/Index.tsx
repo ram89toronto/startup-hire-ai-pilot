@@ -10,27 +10,54 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('Index component mounting - checking auth state');
+    
+    let mounted = true;
+
     const getSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        console.log('Current session:', session);
-        setSession(session);
+        console.log('Initial session check:', session?.user?.email || 'No session');
+        
+        if (mounted) {
+          setSession(session);
+          setLoading(false);
+        }
       } catch (error) {
         console.error('Error getting session:', error);
-        setSession(null);
-      } finally {
-        setLoading(false);
+        if (mounted) {
+          setSession(null);
+          setLoading(false);
+        }
       }
     };
 
-    getSession();
-
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log('Auth state changed:', _event, session);
-      setSession(session);
+      console.log('Auth state changed:', _event, session?.user?.email || 'No session');
+      if (mounted) {
+        setSession(session);
+        setLoading(false);
+      }
     });
 
-    return () => subscription.unsubscribe();
+    // Get initial session
+    getSession();
+
+    // Add timeout fallback to prevent infinite loading
+    const timeout = setTimeout(() => {
+      if (mounted && loading) {
+        console.log('Session check timeout - showing landing page');
+        setLoading(false);
+        setSession(null);
+      }
+    }, 3000);
+
+    return () => {
+      mounted = false;
+      clearTimeout(timeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   if (loading) {
@@ -41,8 +68,7 @@ const Index = () => {
     );
   }
 
-  // Always show landing page if no session - don't redirect to auth automatically
-  console.log('Rendering with session:', session);
+  console.log('Rendering Index with session:', session?.user?.email || 'No session');
   return session ? <HomePage session={session} /> : <LandingPage />;
 };
 

@@ -54,7 +54,9 @@ const Auth = () => {
   };
 
   const handleBackToHome = () => {
-    window.location.href = '/';
+    console.log('Back to Home clicked - navigating to home page');
+    // Use replace to avoid adding to history stack
+    window.location.replace('/');
   };
 
   return (
