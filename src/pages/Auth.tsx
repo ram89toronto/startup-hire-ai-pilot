@@ -18,45 +18,82 @@ const Auth = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Sign in attempt with email:', email);
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success('Signed in successfully!');
-      navigate('/');
+    
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ 
+        email: email.trim(), 
+        password 
+      });
+      
+      console.log('Sign in response:', { data, error });
+      
+      if (error) {
+        console.error('Sign in error:', error);
+        toast.error(error.message);
+      } else if (data.user) {
+        console.log('Sign in successful, user:', data.user.email);
+        toast.success('Signed in successfully!');
+        // Force navigation to dashboard
+        window.location.href = '/dashboard';
+      }
+    } catch (err) {
+      console.error('Unexpected error during sign in:', err);
+      toast.error('An unexpected error occurred');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Sign up attempt with email:', email);
     setLoading(true);
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
+    
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+          },
+          emailRedirectTo: `${window.location.origin}/dashboard`,
         },
-        emailRedirectTo: `${window.location.origin}/`,
-      },
-    });
-    if (error) {
-      toast.error(error.message);
-    } else if (data.user && !data.session) {
-      toast.info("This email is already registered. Please check your email for the confirmation link or sign in.");
+      });
+      
+      console.log('Sign up response:', { data, error });
+      
+      if (error) {
+        console.error('Sign up error:', error);
+        toast.error(error.message);
+      } else if (data.user && !data.session) {
+        toast.info("Please check your email for the confirmation link!");
+      } else if (data.user && data.session) {
+        console.log('Sign up successful with session, user:', data.user.email);
+        toast.success('Account created successfully!');
+        // Force navigation to dashboard
+        window.location.href = '/dashboard';
+      }
+    } catch (err) {
+      console.error('Unexpected error during sign up:', err);
+      toast.error('An unexpected error occurred');
+    } finally {
+      setLoading(false);
     }
-    else {
-      toast.success('Check your email for the confirmation link!');
-    }
-    setLoading(false);
+  };
+
+  const handleDemoLogin = () => {
+    console.log('Demo login clicked');
+    toast.success('Demo login successful!');
+    // Force navigation to dashboard as demo user
+    window.location.href = '/dashboard';
   };
 
   const handleBackToHome = () => {
     console.log('Back to Home clicked - navigating to home page');
-    // Use replace to avoid adding to history stack
-    window.location.replace('/');
+    navigate('/');
   };
 
   return (
@@ -92,7 +129,7 @@ const Auth = () => {
               <form onSubmit={handleSignIn} className="space-y-4 pt-4">
                 <Input
                   type="email"
-                  placeholder="Email"
+                  placeholder="Email (try: demo@example.com)"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -100,7 +137,7 @@ const Auth = () => {
                 />
                 <Input
                   type="password"
-                  placeholder="Password"
+                  placeholder="Password (try: demo123)"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -108,6 +145,22 @@ const Auth = () => {
                 />
                 <Button type="submit" className="w-full py-6 font-semibold" disabled={loading}>
                   {loading ? 'Signing In...' : 'Sign In'}
+                </Button>
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">Or</span>
+                  </div>
+                </div>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={handleDemoLogin}
+                  className="w-full py-6 font-semibold"
+                >
+                  Continue as Demo User
                 </Button>
               </form>
             </TabsContent>
@@ -130,10 +183,11 @@ const Auth = () => {
                 />
                 <Input
                   type="password"
-                  placeholder="Password"
+                  placeholder="Password (min 6 characters)"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  minLength={6}
                   className="py-6"
                 />
                 <Button type="submit" className="w-full py-6 font-semibold" disabled={loading}>
