@@ -3,10 +3,28 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useEffect, useState } from 'react';
 import { Session } from '@supabase/supabase-js';
+import { isDemoSession, getDemoUser } from '@/utils/authUtils';
 
 const fetchUserProfile = async (session: Session | null) => {
     if (!session?.user) {
         return null;
+    }
+
+    // Handle demo users
+    if (isDemoSession()) {
+        const demoUser = getDemoUser();
+        return {
+            id: demoUser?.id || 'demo-user-id',
+            full_name: demoUser?.full_name || 'Demo User',
+            email: demoUser?.email || 'demo@example.com',
+            company: 'Demo Company',
+            avatar_url: null,
+            subscription_tier: 'Free',
+            tokens_used: 0,
+            tokens_limit: 10,
+            tokens_last_reset: new Date().toISOString(),
+            created_at: new Date().toISOString()
+        };
     }
 
     const { data, error } = await supabase
@@ -26,6 +44,18 @@ export const useProfile = () => {
     const [session, setSession] = useState<Session | null>(null);
     
     useEffect(() => {
+        // Check for demo session first
+        if (isDemoSession()) {
+            const demoUser = getDemoUser();
+            setSession({
+                user: demoUser,
+                access_token: 'demo-token',
+                expires_at: Date.now() + 3600000,
+            } as any);
+            return;
+        }
+
+        // Handle real Supabase sessions
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
         });
@@ -38,7 +68,7 @@ export const useProfile = () => {
     }, []);
 
     return useQuery({
-        queryKey: ['userProfile', session?.user?.id],
+        queryKey: ['userProfile', session?.user?.id, isDemoSession()],
         queryFn: () => fetchUserProfile(session),
         enabled: !!session?.user,
     });

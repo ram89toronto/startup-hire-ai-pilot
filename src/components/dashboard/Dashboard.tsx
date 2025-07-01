@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
@@ -6,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Users, Calendar, Target, Clock, Plus, TrendingUp, TrendingDown, AlertTriangle, BarChart3, LogOut, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { isDemoSession, signOutWithCleanup } from "@/utils/authUtils";
+import { toast } from "sonner";
 
 type DashboardProps = {
   session: Session | null;
@@ -22,6 +25,7 @@ const StatCardSkeleton = () => (
 );
 
 export const Dashboard = ({ session }: DashboardProps) => {
+  const isDemo = isDemoSession();
 
   const { 
     data: campaigns, 
@@ -31,6 +35,26 @@ export const Dashboard = ({ session }: DashboardProps) => {
   } = useQuery({
     queryKey: ['campaigns', session?.user?.id],
     queryFn: async () => {
+      if (isDemo) {
+        // Return demo data for demo users
+        return [
+          {
+            id: 'demo-campaign-1',
+            role_title: 'Senior Frontend Developer',
+            status: 'active',
+            created_at: new Date().toISOString(),
+            department: 'Engineering'
+          },
+          {
+            id: 'demo-campaign-2',
+            role_title: 'Product Manager',
+            status: 'active',
+            created_at: new Date().toISOString(),
+            department: 'Product'
+          }
+        ];
+      }
+
       const { data, error } = await supabase
         .from('hiring_campaigns')
         .select('id, role_title, status, created_at, department')
@@ -55,17 +79,28 @@ export const Dashboard = ({ session }: DashboardProps) => {
   } = useQuery({
     queryKey: ['candidates', campaignIds],
     queryFn: async () => {
-        if (campaignIds.length === 0) return [];
-        const { data, error } = await supabase
-            .from('candidates')
-            .select('id')
-            .in('campaign_id', campaignIds);
+      if (isDemo) {
+        // Return demo data for demo users
+        return [
+          { id: 'demo-candidate-1' },
+          { id: 'demo-candidate-2' },
+          { id: 'demo-candidate-3' },
+          { id: 'demo-candidate-4' },
+          { id: 'demo-candidate-5' }
+        ];
+      }
 
-        if (error) {
-            console.error("Error fetching candidates:", error);
-            throw new Error(error.message);
-        }
-        return data;
+      if (campaignIds.length === 0) return [];
+      const { data, error } = await supabase
+          .from('candidates')
+          .select('id')
+          .in('campaign_id', campaignIds);
+
+      if (error) {
+          console.error("Error fetching candidates:", error);
+          throw new Error(error.message);
+      }
+      return data;
     },
     enabled: !isLoadingCampaigns && campaignIds.length > 0 && !isErrorCampaigns,
   });
@@ -76,7 +111,7 @@ export const Dashboard = ({ session }: DashboardProps) => {
 
   const stats = [
     { title: "Total Candidates", value: candidates?.length ?? 0, icon: Users, color: "blue", change: "+12%", trending: "up" },
-    { title: "Interviews Scheduled", value: 8, icon: Calendar, color: "teal", change: "+8%", trending: "up" },
+    { title: "Interviews Scheduled", value: isDemo ? 8 : 8, icon: Calendar, color: "teal", change: "+8%", trending: "up" },
     { title: "Match Score Avg", value: "87%", icon: Target, color: "purple", change: "+15%", trending: "up" },
     { title: "Days to Hire", value: "4.2", icon: Clock, color: "rose", change: "-23%", trending: "down" }
   ];
@@ -92,7 +127,16 @@ export const Dashboard = ({ session }: DashboardProps) => {
   };
   
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await signOutWithCleanup();
+    toast.success(isDemo ? 'Demo session ended' : 'Signed out successfully');
+  };
+
+  const handleCreateCampaign = () => {
+    if (isDemo) {
+      toast.info('This is a demo. In the full version, you can create real campaigns!');
+    } else {
+      toast.info('Campaign creation feature coming soon!');
+    }
   };
 
   return (
@@ -100,13 +144,18 @@ export const Dashboard = ({ session }: DashboardProps) => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-primary drop-shadow-sm font-primary">Hiring Dashboard</h1>
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-primary drop-shadow-sm font-primary">
+            {isDemo ? 'Demo Dashboard' : 'Hiring Dashboard'}
+          </h1>
           <p className="text-muted-foreground mt-1">
             {isLoading ? "Loading data..." : isError ? "Error loading data" : `Active campaigns: ${campaigns?.length ?? 0} • Candidates in pipeline: ${candidates?.length ?? 0}`}
           </p>
         </div>
         <div className="flex items-center gap-2">
-            <Button className="app-gradient-bg hover:brightness-110 text-white shadow-lg sm:w-auto rounded-full font-primary font-semibold text-lg px-7 py-4">
+            <Button 
+              onClick={handleCreateCampaign}
+              className="app-gradient-bg hover:brightness-110 text-white shadow-lg sm:w-auto rounded-full font-primary font-semibold text-lg px-7 py-4"
+            >
               <Plus className="h-4 w-4 mr-2" />
               New Campaign
             </Button>
@@ -116,7 +165,7 @@ export const Dashboard = ({ session }: DashboardProps) => {
         </div>
       </div>
 
-      {isError ? (
+      {isError && !isDemo ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-rose-200 bg-rose-50 p-12 text-center shadow-sm">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-rose-100">
                 <AlertTriangle className="h-6 w-6 text-rose-500" />
@@ -129,7 +178,7 @@ export const Dashboard = ({ session }: DashboardProps) => {
         <>
           {/* Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-            {isLoading ? (
+            {isLoading && !isDemo ? (
                 Array.from({ length: 4 }).map((_, i) => <StatCardSkeleton key={i} />)
             ) : (
                 stats.map((stat, index) => (
@@ -160,13 +209,14 @@ export const Dashboard = ({ session }: DashboardProps) => {
                 ))
             )}
           </div>
+          
           {/* Active Campaigns */}
           <Card className="saas-card">
             <CardHeader>
               <CardTitle className="text-primary">Active Campaigns</CardTitle>
             </CardHeader>
             <CardContent>
-                {isLoading ? (
+                {isLoading && !isDemo ? (
                     <div className="text-center py-12 flex items-center justify-center gap-2 text-muted-foreground">
                         <Loader2 className="h-5 w-5 animate-spin" />
                         <span>Loading campaigns...</span>
@@ -178,10 +228,11 @@ export const Dashboard = ({ session }: DashboardProps) => {
                                 <div>
                                     <h3 className="font-semibold text-primary">{campaign.role_title}</h3>
                                     <p className="text-sm text-muted-foreground">{campaign.department || 'No department'}</p>
+                                    {isDemo && <span className="text-xs text-blue-600 font-medium">Demo Data</span>}
                                 </div>
                                 <div className="flex items-center gap-4">
                                     <Badge variant={campaign.status === 'active' ? 'default' : 'secondary'}>{campaign.status}</Badge>
-                                    <Button variant="outline" size="sm">View</Button>
+                                    <Button variant="outline" size="sm" onClick={() => toast.info('Campaign details coming soon!')}>View</Button>
                                 </div>
                             </li>
                         ))}
@@ -191,14 +242,20 @@ export const Dashboard = ({ session }: DashboardProps) => {
                     <Users className="h-16 w-16 text-blue-200 mx-auto mb-4" />
                     <h3 className="text-lg font-semibold text-primary mb-2">No campaigns yet</h3>
                     <p className="text-muted-foreground mb-6">Create your first hiring campaign to get started</p>
-                    <Button className="app-gradient-bg rounded-full text-white font-bold shadow hover:brightness-110 px-8 py-4">Create Campaign</Button>
+                    <Button 
+                      onClick={handleCreateCampaign}
+                      className="app-gradient-bg rounded-full text-white font-bold shadow hover:brightness-110 px-8 py-4"
+                    >
+                      Create Campaign
+                    </Button>
                   </div>
                 )}
             </CardContent>
           </Card>
+          
           {/* Quick Actions */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
-            <Card className="saas-card hover:ring-2 ring-accent cursor-pointer">
+            <Card className="saas-card hover:ring-2 ring-accent cursor-pointer" onClick={() => toast.info('Feature coming soon!')}>
               <CardContent className="p-6 flex items-center gap-3">
                 <div className="w-14 h-14 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
                   <AlertTriangle className="h-7 w-7 text-white" />
@@ -209,7 +266,7 @@ export const Dashboard = ({ session }: DashboardProps) => {
                 </div>
               </CardContent>
             </Card>
-            <Card className="saas-card hover:ring-2 ring-accent cursor-pointer">
+            <Card className="saas-card hover:ring-2 ring-accent cursor-pointer" onClick={() => toast.info('Feature coming soon!')}>
               <CardContent className="p-6 flex items-center gap-3">
                 <div className="w-14 h-14 bg-accent rounded-lg flex items-center justify-center flex-shrink-0">
                   <Calendar className="h-7 w-7 text-white" />
@@ -220,7 +277,7 @@ export const Dashboard = ({ session }: DashboardProps) => {
                 </div>
               </CardContent>
             </Card>
-            <Card className="saas-card hover:ring-2 ring-accent cursor-pointer">
+            <Card className="saas-card hover:ring-2 ring-accent cursor-pointer" onClick={() => toast.info('Feature coming soon!')}>
               <CardContent className="p-6 flex items-center gap-3">
                 <div className="w-14 h-14 bg-gradient-to-br from-emerald-400 via-green-500 to-green-600 rounded-lg flex items-center justify-center flex-shrink-0">
                   <BarChart3 className="h-7 w-7 text-white" />

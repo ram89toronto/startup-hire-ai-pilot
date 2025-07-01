@@ -5,11 +5,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { Header } from "@/components/layout/Header";
 import { AppContent } from "@/components/layout/AppContent";
+import { isDemoSession, getDemoUser, signOutWithCleanup } from "@/utils/authUtils";
+import { toast } from "sonner";
 
 const DashboardPage = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeView, setActiveView] = useState<"dashboard" | "prompt-generator" | "analytics" | "settings">("dashboard");
+  const [isDemoActive, setIsDemoActive] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -17,43 +20,69 @@ const DashboardPage = () => {
     
     let mounted = true;
 
-    const getSession = async () => {
+    const checkAuthState = async () => {
       try {
+        // Check for demo session first
+        const demoActive = isDemoSession();
+        console.log('Demo session check:', demoActive);
+        
+        if (demoActive) {
+          const demoUser = getDemoUser();
+          console.log('Demo user:', demoUser);
+          
+          if (mounted) {
+            setIsDemoActive(true);
+            // Create mock session for demo
+            setSession({
+              user: demoUser,
+              access_token: 'demo-token',
+              expires_at: Date.now() + 3600000,
+            } as any);
+            setLoading(false);
+          }
+          return;
+        }
+
+        // Check for real Supabase session
         const { data: { session } } = await supabase.auth.getSession();
         console.log('Dashboard session check:', session?.user?.email || 'No session');
         
         if (mounted) {
           if (!session) {
-            // Not authenticated, redirect to home
-            navigate('/');
+            // Not authenticated and no demo - redirect to auth
+            navigate('/auth');
             return;
           }
           setSession(session);
+          setIsDemoActive(false);
           setLoading(false);
         }
       } catch (error) {
         console.error('Error getting session:', error);
         if (mounted) {
-          navigate('/');
+          navigate('/auth');
         }
       }
     };
 
-    // Set up auth state listener
+    // Set up auth state listener for real sessions
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       console.log('Dashboard auth state changed:', _event, session?.user?.email || 'No session');
       if (mounted) {
-        if (!session) {
-          navigate('/');
+        if (!session && !isDemoSession()) {
+          navigate('/auth');
           return;
         }
-        setSession(session);
-        setLoading(false);
+        if (session) {
+          setSession(session);
+          setIsDemoActive(false);
+          setLoading(false);
+        }
       }
     });
 
-    // Get initial session
-    getSession();
+    // Initial check
+    checkAuthState();
 
     return () => {
       mounted = false;
@@ -61,14 +90,25 @@ const DashboardPage = () => {
     };
   }, [navigate]);
 
-  const handleSignOut = () => {
-    supabase.auth.signOut().then(() => navigate('/'));
+  const handleSignOut = async () => {
+    console.log('Sign out requested');
+    setLoading(true);
+    
+    if (isDemoActive) {
+      // Handle demo logout
+      await signOutWithCleanup();
+      toast.success('Demo session ended');
+    } else {
+      // Handle real logout
+      await signOutWithCleanup();
+      toast.success('Signed out successfully');
+    }
   };
 
   if (loading) {
     return (
       <div className="min-h-screen app-gradient-bg flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
+        <div className="text-white text-xl">Loading dashboard...</div>
       </div>
     );
   }
@@ -86,6 +126,11 @@ const DashboardPage = () => {
         setActiveView={setActiveView}
       />
       <AppContent session={session} activeView={activeView} />
+      {isDemoActive && (
+        <div className="fixed bottom-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg">
+          Demo Mode Active
+        </div>
+      )}
     </div>
   );
 };

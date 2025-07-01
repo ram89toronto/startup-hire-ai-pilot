@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from 'sonner';
-import { Rocket, ArrowLeft } from 'lucide-react';
+import { Rocket, ArrowLeft, Loader2 } from 'lucide-react';
+import { cleanupAuthState, createDemoSession } from '@/utils/authUtils';
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -22,6 +23,16 @@ const Auth = () => {
     setLoading(true);
     
     try {
+      // Clean up existing state before signing in
+      cleanupAuthState();
+      
+      // Attempt to sign out any existing session
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (err) {
+        console.log('No existing session to sign out');
+      }
+      
       const { data, error } = await supabase.auth.signInWithPassword({ 
         email: email.trim(), 
         password 
@@ -31,16 +42,24 @@ const Auth = () => {
       
       if (error) {
         console.error('Sign in error:', error);
-        toast.error(error.message);
+        
+        // Provide user-friendly error messages
+        if (error.message.includes('Invalid login credentials')) {
+          toast.error('Invalid email or password. Please check your credentials.');
+        } else if (error.message.includes('Email not confirmed')) {
+          toast.error('Please check your email and confirm your account before signing in.');
+        } else {
+          toast.error(error.message);
+        }
       } else if (data.user) {
         console.log('Sign in successful, user:', data.user.email);
-        toast.success('Signed in successfully!');
-        // Force navigation to dashboard
+        toast.success('Welcome back!');
+        // Force navigation to dashboard with full page reload for clean state
         window.location.href = '/dashboard';
       }
     } catch (err) {
       console.error('Unexpected error during sign in:', err);
-      toast.error('An unexpected error occurred');
+      toast.error('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -52,6 +71,9 @@ const Auth = () => {
     setLoading(true);
     
     try {
+      // Clean up existing state before signing up
+      cleanupAuthState();
+      
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
@@ -67,18 +89,29 @@ const Auth = () => {
       
       if (error) {
         console.error('Sign up error:', error);
-        toast.error(error.message);
-      } else if (data.user && !data.session) {
-        toast.info("Please check your email for the confirmation link!");
-      } else if (data.user && data.session) {
-        console.log('Sign up successful with session, user:', data.user.email);
-        toast.success('Account created successfully!');
-        // Force navigation to dashboard
-        window.location.href = '/dashboard';
+        
+        // Provide user-friendly error messages
+        if (error.message.includes('User already registered')) {
+          toast.error('An account with this email already exists. Please sign in instead.');
+        } else if (error.message.includes('Password should be at least')) {
+          toast.error('Password must be at least 6 characters long.');
+        } else {
+          toast.error(error.message);
+        }
+      } else if (data.user) {
+        if (!data.session) {
+          toast.success("Account created! Please check your email to confirm your account.");
+          toast.info("After confirming, you can sign in with your credentials.");
+        } else {
+          console.log('Sign up successful with immediate session:', data.user.email);
+          toast.success('Account created successfully!');
+          // Force navigation to dashboard
+          window.location.href = '/dashboard';
+        }
       }
     } catch (err) {
       console.error('Unexpected error during sign up:', err);
-      toast.error('An unexpected error occurred');
+      toast.error('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -86,9 +119,23 @@ const Auth = () => {
 
   const handleDemoLogin = () => {
     console.log('Demo login clicked');
-    toast.success('Demo login successful!');
-    // Force navigation to dashboard as demo user
-    window.location.href = '/dashboard';
+    setLoading(true);
+    
+    try {
+      // Clean up any existing auth state
+      cleanupAuthState();
+      
+      // Create demo session
+      createDemoSession();
+      
+      toast.success('Welcome to the demo!');
+      // Force navigation to dashboard
+      window.location.href = '/dashboard';
+    } catch (error) {
+      console.error('Demo login error:', error);
+      toast.error('Failed to start demo session');
+      setLoading(false);
+    }
   };
 
   const handleBackToHome = () => {
@@ -122,29 +169,38 @@ const Auth = () => {
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsTrigger value="signin" disabled={loading}>Sign In</TabsTrigger>
+              <TabsTrigger value="signup" disabled={loading}>Sign Up</TabsTrigger>
             </TabsList>
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4 pt-4">
                 <Input
                   type="email"
-                  placeholder="Email (try: demo@example.com)"
+                  placeholder="Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  disabled={loading}
                   className="py-6"
                 />
                 <Input
                   type="password"
-                  placeholder="Password (try: demo123)"
+                  placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  disabled={loading}
                   className="py-6"
                 />
                 <Button type="submit" className="w-full py-6 font-semibold" disabled={loading}>
-                  {loading ? 'Signing In...' : 'Sign In'}
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Signing In...
+                    </>
+                  ) : (
+                    'Sign In'
+                  )}
                 </Button>
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
@@ -158,9 +214,17 @@ const Auth = () => {
                   type="button" 
                   variant="outline" 
                   onClick={handleDemoLogin}
+                  disabled={loading}
                   className="w-full py-6 font-semibold"
                 >
-                  Continue as Demo User
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Starting Demo...
+                    </>
+                  ) : (
+                    'Try Demo (No Account Needed)'
+                  )}
                 </Button>
               </form>
             </TabsContent>
@@ -171,6 +235,7 @@ const Auth = () => {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   required
+                  disabled={loading}
                   className="py-6"
                 />
                 <Input
@@ -179,6 +244,7 @@ const Auth = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  disabled={loading}
                   className="py-6"
                 />
                 <Input
@@ -188,10 +254,18 @@ const Auth = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
+                  disabled={loading}
                   className="py-6"
                 />
                 <Button type="submit" className="w-full py-6 font-semibold" disabled={loading}>
-                  {loading ? 'Creating Account...' : 'Create Account'}
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Creating Account...
+                    </>
+                  ) : (
+                    'Create Account'
+                  )}
                 </Button>
               </form>
             </TabsContent>
