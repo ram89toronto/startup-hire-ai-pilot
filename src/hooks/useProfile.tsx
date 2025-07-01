@@ -23,7 +23,8 @@ const fetchUserProfile = async (session: Session | null) => {
             tokens_used: 0,
             tokens_limit: 10,
             tokens_last_reset: new Date().toISOString(),
-            created_at: new Date().toISOString()
+            created_at: new Date().toISOString(),
+            gemini_api_key: null
         };
     }
 
