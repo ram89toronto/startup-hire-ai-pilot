@@ -22,22 +22,27 @@ export const cleanupAuthState = () => {
   }
 };
 
-// Sign out with cleanup
+// Sign out with cleanup - fixed to avoid infinite redirects
 export const signOutWithCleanup = async () => {
   console.log('Signing out with cleanup...');
   try {
-    // Clean up auth state first
+    // Clear demo session first if active
+    if (isDemoSession()) {
+      clearDemoSession();
+    }
+    
+    // Clean up auth state
     cleanupAuthState();
     
-    // Attempt global sign out
+    // Attempt global sign out for real sessions
     await supabase.auth.signOut({ scope: 'global' });
   } catch (error) {
     console.error('Error during sign out:', error);
     // Even if sign out fails, we've cleaned up local state
   }
   
-  // Force page reload for clean state
-  window.location.href = '/';
+  // Return without forcing page reload - let React Router handle navigation
+  return true;
 };
 
 // Create demo session (temporary solution)

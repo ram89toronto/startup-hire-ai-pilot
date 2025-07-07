@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { Header } from "@/components/layout/Header";
 import { AppContent } from "@/components/layout/AppContent";
-import { isDemoSession, getDemoUser, signOutWithCleanup } from "@/utils/authUtils";
+import { isDemoSession, getDemoUser, signOutWithCleanup, clearDemoSession } from "@/utils/authUtils";
 import { toast } from "sonner";
 
 const DashboardPage = () => {
@@ -92,16 +92,20 @@ const DashboardPage = () => {
 
   const handleSignOut = async () => {
     console.log('Sign out requested');
-    setLoading(true);
     
     if (isDemoActive) {
       // Handle demo logout
-      await signOutWithCleanup();
+      clearDemoSession();
+      setIsDemoActive(false);
+      setSession(null);
       toast.success('Demo session ended');
+      navigate('/');
     } else {
       // Handle real logout
       await signOutWithCleanup();
+      setSession(null);
       toast.success('Signed out successfully');
+      navigate('/');
     }
   };
 

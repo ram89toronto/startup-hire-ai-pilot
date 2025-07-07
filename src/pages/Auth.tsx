@@ -54,8 +54,8 @@ const Auth = () => {
       } else if (data.user) {
         console.log('Sign in successful, user:', data.user.email);
         toast.success('Welcome back!');
-        // Force navigation to dashboard with full page reload for clean state
-        window.location.href = '/dashboard';
+        // Use React Router navigation instead of forced reload
+        navigate('/dashboard');
       }
     } catch (err) {
       console.error('Unexpected error during sign in:', err);
@@ -105,8 +105,8 @@ const Auth = () => {
         } else {
           console.log('Sign up successful with immediate session:', data.user.email);
           toast.success('Account created successfully!');
-          // Force navigation to dashboard
-          window.location.href = '/dashboard';
+          // Use React Router navigation instead of forced reload
+          navigate('/dashboard');
         }
       }
     } catch (err) {
@@ -129,11 +129,12 @@ const Auth = () => {
       createDemoSession();
       
       toast.success('Welcome to the demo!');
-      // Force navigation to dashboard
-      window.location.href = '/dashboard';
+      // Use React Router navigation instead of forced reload
+      navigate('/dashboard');
     } catch (error) {
       console.error('Demo login error:', error);
       toast.error('Failed to start demo session');
+    } finally {
       setLoading(false);
     }
   };

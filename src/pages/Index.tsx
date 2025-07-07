@@ -22,8 +22,16 @@ const Index = () => {
         console.log('Demo session active:', demoActive);
         
         if (demoActive) {
-          setIsDemoActive(true);
-          setLoading(false);
+          const demoUser = getDemoUser();
+          if (mounted) {
+            setIsDemoActive(true);
+            setSession({
+              user: demoUser,
+              access_token: 'demo-token',
+              expires_at: Date.now() + 3600000,
+            } as any);
+            setLoading(false);
+          }
           return;
         }
 
@@ -45,15 +53,12 @@ const Index = () => {
       }
     };
 
-    // Set up auth state listener for real sessions
+    // Set up auth state listener for real sessions only
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       console.log('Auth state changed:', _event, session?.user?.email || 'No session');
-      if (mounted) {
+      if (mounted && !isDemoSession()) {
         setSession(session);
-        // If we get a real session, clear demo state
-        if (session) {
-          setIsDemoActive(false);
-        }
+        setIsDemoActive(false);
         setLoading(false);
       }
     });
@@ -74,7 +79,7 @@ const Index = () => {
       clearTimeout(timeout);
       subscription.unsubscribe();
     };
-  }, [loading]);
+  }, []);
 
   if (loading) {
     return (
@@ -88,7 +93,7 @@ const Index = () => {
   const effectiveSession = isDemoActive ? {
     user: getDemoUser(),
     access_token: 'demo-token',
-    expires_at: Date.now() + 3600000, // 1 hour from now
+    expires_at: Date.now() + 3600000,
   } as any : session;
 
   console.log('Rendering Index with session:', effectiveSession?.user?.email || 'No session');
