@@ -3,8 +3,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Users, Calendar, Target, Clock, TrendingUp, TrendingDown } from "lucide-react";
 
-type StatCardSkeletonProps = {};
-
 const StatCardSkeleton = () => (
   <Card className="saas-card">
     <CardContent className="p-6">

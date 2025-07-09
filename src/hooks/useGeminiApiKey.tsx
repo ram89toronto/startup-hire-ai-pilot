@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useProfile } from './useProfile';
+import { ApiKeyError } from '@/types/prompt';
 
 const updateApiKey = async (newKey: string) => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -26,7 +27,7 @@ export const useGeminiApiKey = () => {
             queryClient.invalidateQueries({ queryKey: ['userProfile'] });
             toast.success("API key saved successfully!");
         },
-        onError: (error: any) => {
+        onError: (error: ApiKeyError) => {
             toast.error(error.message || "Failed to save API key.");
         }
     });
@@ -37,7 +38,7 @@ export const useGeminiApiKey = () => {
             queryClient.invalidateQueries({ queryKey: ['userProfile'] });
             toast.success("API key removed successfully!");
         },
-        onError: (error: any) => {
+        onError: (error: ApiKeyError) => {
             toast.error(error.message || "Failed to remove API key.");
         }
     });

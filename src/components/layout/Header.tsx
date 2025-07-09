@@ -52,7 +52,7 @@ export const Header = ({ activeView, setActiveView, isLoggedIn, setIsLoggedIn }:
                   <Button
                     key={item.id}
                     variant={activeView === item.id ? "default" : "ghost"}
-                    onClick={() => setActiveView(item.id as any)}
+                    onClick={() => setActiveView(item.id as "dashboard" | "prompt-generator" | "analytics" | "settings")}
                     className="flex items-center gap-2"
                   >
                     <Icon className="h-4 w-4" />
@@ -93,7 +93,7 @@ export const Header = ({ activeView, setActiveView, isLoggedIn, setIsLoggedIn }:
                     key={item.id}
                     variant={activeView === item.id ? "default" : "ghost"}
                     onClick={() => {
-                      setActiveView(item.id as any);
+                      setActiveView(item.id as "dashboard" | "prompt-generator" | "analytics" | "settings");
                       setIsMobileMenuOpen(false);
                     }}
                     className="w-full justify-start gap-2"

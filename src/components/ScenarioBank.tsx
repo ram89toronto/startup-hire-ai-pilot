@@ -7,8 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Zap, TrendingUp, DollarSign, Users, Code, BarChart3, Shield, RefreshCw, Sparkles, Copy } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Scenario } from "@/types/prompt";
 
-const scenarios = [
+const scenarios: Scenario[] = [
   {
     title: "Pivot on a Dime",
     icon: Zap,
@@ -81,7 +82,7 @@ export const ScenarioBank = () => {
   const [customTitle, setCustomTitle] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedScenarios, setGeneratedScenarios] = useState<any[]>([]);
+  const [generatedScenarios, setGeneratedScenarios] = useState<Scenario[]>([]);
   const [generatingScenarioId, setGeneratingScenarioId] = useState<string | null>(null);
 
   const generateRandomScenario = async (category?: string) => {
@@ -92,7 +93,7 @@ export const ScenarioBank = () => {
       const randomCategories = category ? [category] : categories;
       const randomCategory = randomCategories[Math.floor(Math.random() * randomCategories.length)];
       
-      const newScenario = {
+      const newScenario: Scenario = {
         title: `Generated ${randomCategory} Challenge`,
         icon: Code, // Default icon
         category: randomCategory,
@@ -120,7 +121,7 @@ export const ScenarioBank = () => {
     setTimeout(() => {
       const randomCategory = categories[Math.floor(Math.random() * categories.length)];
       
-      const newScenario = {
+      const newScenario: Scenario = {
         title: customTitle,
         icon: Sparkles,
         category: randomCategory,
@@ -137,13 +138,13 @@ export const ScenarioBank = () => {
     }, 2000);
   };
 
-  const generateBasedOnExample = async (baseScenario: any, index: number) => {
+  const generateBasedOnExample = async (baseScenario: Scenario, index: number) => {
     const scenarioId = `example-${index}`;
     setGeneratingScenarioId(scenarioId);
     
     // Simulate AI generation based on example
     setTimeout(() => {
-      const newScenario = {
+      const newScenario: Scenario = {
         title: `${baseScenario.title} - Variant`,
         icon: baseScenario.icon,
         category: baseScenario.category,

@@ -52,7 +52,7 @@ export const useProfile = () => {
                 user: demoUser,
                 access_token: 'demo-token',
                 expires_at: Date.now() + 3600000,
-            } as any);
+            } as Session);
             return;
         }
 

@@ -37,7 +37,7 @@ const DashboardPage = () => {
               user: demoUser,
               access_token: 'demo-token',
               expires_at: Date.now() + 3600000,
-            } as any);
+            } as Session);
             setLoading(false);
           }
           return;
