@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EnhancedRagChat } from "@/components/chat/EnhancedRagChat";
+import { ChatContext } from "@/types/prompt";
 
 type Tab = "preview" | "research" | "settings";
 
@@ -29,7 +30,7 @@ const sidebarTabs = [
 ] as const;
 
 interface Props {
-  chatContext: any;
+  chatContext: ChatContext;
   showPdf: boolean;
   setShowPdf: (b: boolean) => void;
   previewTab: ReactNode;

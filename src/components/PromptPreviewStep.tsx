@@ -11,6 +11,7 @@ import { useTokens } from "@/hooks/useTokens";
 import { useGoogleApis } from "@/hooks/useGoogleApis";
 import { FileText, MessageCircle, Settings, Search, Sparkles } from "lucide-react";
 import { PromptWizardSidebarLayout } from "./PromptWizardSidebarLayout";
+import { PromptContext } from "@/types/prompt";
 
 export function PromptPreviewStep({
   role,
@@ -20,7 +21,7 @@ export function PromptPreviewStep({
   showPdf,
 }: {
   role: string;
-  context: any;
+  context: PromptContext;
   scenario: string;
   setShowPdf: (v: boolean) => void;
   showPdf: boolean;

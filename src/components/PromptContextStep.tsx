@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { PromptContext } from "@/types/prompt";
 
 export function PromptContextStep({
   role,
@@ -11,15 +12,15 @@ export function PromptContextStep({
   setContext,
 }: {
   role: string;
-  context: any;
-  setContext: (ctx: any) => void;
+  context: PromptContext;
+  setContext: (ctx: PromptContext) => void;
 }) {
   return (
     <Card>
       <CardHeader>
         <CardTitle>Company Details & Role Context</CardTitle>
         <CardDescription>
-          Provide information about the company, challenge, and what you’re hiring for. Required fields marked *
+          Provide information about the company, challenge, and what you're hiring for. Required fields marked *
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
